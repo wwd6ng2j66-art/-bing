@@ -27,7 +27,6 @@ local Window = Rayfield:CreateWindow({
 
 --// ===== 标签页 =====
 local TabHome = Window:CreateTab("主页")
-local TabCommon = Window:CreateTab("常用功能")
 local TabGame = Window:CreateTab("游戏脚本")
 local TabAbout = Window:CreateTab("关于脚本")
 
@@ -35,29 +34,6 @@ local TabAbout = Window:CreateTab("关于脚本")
 TabHome:CreateSection("作者信息")
 TabHome:CreateLabel("作者：榆")
 TabHome:CreateParagraph({ Title = "关于作者", Content = "本脚本由 榆 开发，仅供学习交流使用。" })
-
---// ===== 常用功能 =====
-TabCommon:CreateSection("基础操作")
-TabCommon:CreateButton({ Name = "执行按钮一", Callback = function() Rayfield:Notify({ Title="提示", Content="按钮一（空功能）", Duration=2 }) end })
-TabCommon:CreateToggle({ Name = "开关一", CurrentValue = false, Callback = function() end })
-TabCommon:CreateButton({ Name = "执行按钮二", Callback = function() Rayfield:Notify({ Title="提示", Content="按钮二（空功能）", Duration=2 }) end })
-TabCommon:CreateToggle({ Name = "开关二", CurrentValue = false, Callback = function() end })
-
-TabCommon:CreateSection("远程脚本")
-TabCommon:CreateButton({
-    Name = "通用飞踢",
-    Callback = function()
-        Rayfield:Notify({ Title="加载中", Content="正在加载通用飞踢脚本...", Duration=3 })
-        local s, err = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/wwd6ng2j66-art/-bing/main/通用飞踢.lua"))()
-        end)
-        Rayfield:Notify({ Title = s and "成功" or "失败", Content = s and "通用飞踢 加载成功！" or ("通用飞踢 加载失败："..tostring(err)), Duration = s and 3 or 5 })
-    end
-})
-
-TabCommon:CreateSection("扩展操作")
-TabCommon:CreateButton({ Name = "执行按钮三", Callback = function() Rayfield:Notify({ Title="提示", Content="按钮三（空功能）", Duration=2 }) end })
-TabCommon:CreateToggle({ Name = "开关三", CurrentValue = false, Callback = function() end })
 
 --// ===== 游戏脚本（动物医院 + RB脚本 + 夜脚本）=====
 TabGame:CreateSection("动物医院")
@@ -85,7 +61,7 @@ TabGame:CreateButton({
     end
 })
 
---// ===== 夜脚本（新增）=====
+--// ===== 夜脚本 =====
 TabGame:CreateSection("夜脚本")
 TabGame:CreateButton({
     Name = "夜脚本",
