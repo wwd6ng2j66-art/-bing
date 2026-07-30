@@ -16,8 +16,8 @@ end
 
 --// ===== 加载界面 =====
 local Window = Rayfield:CreateWindow({
-    Name = "夜脚本",
-    LoadingTitle = "夜脚本",
+    Name = "冰缝合",
+    LoadingTitle = "冰缝合",
     LoadingSubtitle = "正在加载...",
     ConfigurationSaving = {
         Enabled = false
@@ -32,11 +32,11 @@ local TabAbout = Window:CreateTab("关于脚本")
 
 --// ===== 主页 =====
 TabHome:CreateSection("作者信息")
-TabHome:CreateLabel("作者：榆")
+TabHome:CreateLabel("作者：榆，冰")
 TabHome:CreateParagraph({ Title = "关于作者", Content = "本脚本由 榆 开发，仅供学习交流使用。" })
 
 --// ===== 游戏脚本 =====
-TabGame:CreateSection("夜脚本")
+TabGame:CreateSection("冰，榆缝合脚本")
 
 -- 加载用户提供的远程脚本内容
 local rawScript = [[
