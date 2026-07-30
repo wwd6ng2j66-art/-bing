@@ -585,7 +585,9 @@ TabGame:CreateButton({
 
 --// ===== 关于脚本 =====
 TabAbout:CreateSection("脚本信息")
-TabAbout:CreateParagraph({ Title = "夜脚本 V1.0", Content = "集成夜脚本启动功能，包含游戏匹配与启动保护机制。" })
+TabAbout:CreateParagraph({ Title = "冰
+        
+脚本 V1.0", Content = "集成冰脚本启动功能，包含游戏匹配与启动保护机制。" })
 TabAbout:CreateLabel("开发者：榆QQ3347313900")
 TabAbout:CreateLabel("版本：V1.0")
 TabAbout:CreateLabel("状态：学习用途")
