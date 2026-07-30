@@ -570,6 +570,19 @@ TabGame:CreateButton({
     end
 })
 
+TabGame:CreateSection("动物医院")
+TabGame:CreateButton({
+    Name = "动物医院",
+    Callback = function()
+        Rayfield:Notify({ Title="加载中", Content="正在加载动物医院脚本...", Duration=3 })
+        local s, err = pcall(function()
+            script_key = "umjjkMsWDMFEhzyhERlOwQihGFQYgGGp"
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/caomod2077/Script/refs/heads/main/FN_AnimalHospital.lua"))()
+        end)
+        Rayfield:Notify({ Title = s and "成功" or "失败", Content = s and "动物医院 加载成功！" or ("动物医院 加载失败："..tostring(err)), Duration = s and 3 or 5 })
+    end
+})
+
 --// ===== 关于脚本 =====
 TabAbout:CreateSection("脚本信息")
 TabAbout:CreateParagraph({ Title = "夜脚本 V1.0", Content = "集成夜脚本启动功能，包含游戏匹配与启动保护机制。" })
