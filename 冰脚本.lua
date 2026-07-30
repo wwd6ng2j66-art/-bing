@@ -59,14 +59,13 @@ TabCommon:CreateSection("扩展操作")
 TabCommon:CreateButton({ Name = "执行按钮三", Callback = function() Rayfield:Notify({ Title="提示", Content="按钮三（空功能）", Duration=2 }) end })
 TabCommon:CreateToggle({ Name = "开关三", CurrentValue = false, Callback = function() end })
 
---// ===== 游戏脚本（动物医院 + RB脚本）=====
+--// ===== 游戏脚本（动物医院 + RB脚本 + 夜脚本）=====
 TabGame:CreateSection("动物医院")
 TabGame:CreateButton({
     Name = "动物医院",
     Callback = function()
         Rayfield:Notify({ Title="加载中", Content="正在加载动物医院脚本...", Duration=3 })
         local s, err = pcall(function()
-            -- 将 script_key 定义在加载前
             script_key = "umjjkMsWDMFEhzyhERlOwQihGFQYgGGp"
             loadstring(game:HttpGet("https://raw.githubusercontent.com/caomod2077/Script/refs/heads/main/FN_AnimalHospital.lua"))()
         end)
@@ -83,6 +82,19 @@ TabGame:CreateButton({
             loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/a0502f7619e7a63fb0dabac96e425c21.lua"))()
         end)
         Rayfield:Notify({ Title = s and "成功" or "失败", Content = s and "RB脚本 加载成功！" or ("RB脚本 加载失败："..tostring(err)), Duration = s and 3 or 5 })
+    end
+})
+
+--// ===== 夜脚本（新增）=====
+TabGame:CreateSection("夜脚本")
+TabGame:CreateButton({
+    Name = "夜脚本",
+    Callback = function()
+        Rayfield:Notify({ Title="加载中", Content="正在加载夜脚本...", Duration=3 })
+        local s, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ylt410/roblox-Script/refs/heads/main/yejiaoben"))()
+        end)
+        Rayfield:Notify({ Title = s and "成功" or "失败", Content = s and "夜脚本 加载成功！" or ("夜脚本 加载失败："..tostring(err)), Duration = s and 3 or 5 })
     end
 })
 
