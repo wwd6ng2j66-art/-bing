@@ -1,46 +1,4 @@
---// ===== 玩家进出提示系统 =====
-_G.PlayerNotify = {}
-local PlayerNotifyEnabled = true
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-function _G.PlayerNotify.SetEnabled(state)
-    PlayerNotifyEnabled = state
-end
-
-local function Notify(content)
-    if not PlayerNotifyEnabled then return end
-    if not Rayfield then return end
-    Rayfield:Notify({
-        Title = "玩家提示",
-        Content = content,
-        Duration = 3
-    })
-end
-
--- 监听玩家加入
-Players.PlayerAdded:Connect(function(plr)
-    if plr ~= LocalPlayer then
-        Notify("玩家加入：" .. plr.Name)
-    end
-end)
-
--- 监听玩家离开
-Players.PlayerRemoving:Connect(function(plr)
-    if plr ~= LocalPlayer then
-        Notify("玩家离开：" .. plr.Name)
-    end
-end)
-
--- 初始化提示已在服务器的玩家
-for _, plr in ipairs(Players:GetPlayers()) do
-    if plr ~= LocalPlayer then
-        Notify("当前在线：" .. plr.Name)
-    end
-end
-
---// ===== Rayfield UI =====
+--// ===== Rayfield =====
 local success, Rayfield = pcall(function()
     return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 end)
@@ -50,22 +8,19 @@ if not success or not Rayfield then
 end
 
 if not Rayfield then
-    warn("Rayfield UI 库加载失败，请检查网络或更换执行器。")
+    warn("Rayfield 加载失败")
     return
 end
 
---// ===== 加载界面 =====
+--// ===== 窗口 =====
 local Window = Rayfield:CreateWindow({
     Name = "冰缝合脚本",
     LoadingTitle = "冰缝合脚本",
     LoadingSubtitle = "正在加载...",
-    ConfigurationSaving = {
-        Enabled = false
-    },
+    ConfigurationSaving = { Enabled = false },
     KeySystem = false
 })
 
---// ===== 标签页 =====
 local TabHome = Window:CreateTab("主页")
 local TabGame = Window:CreateTab("游戏脚本")
 local TabAbout = Window:CreateTab("关于脚本")
@@ -75,21 +30,60 @@ TabHome:CreateSection("作者信息")
 TabHome:CreateLabel("作者：榆")
 TabHome:CreateParagraph({ Title = "关于作者", Content = "本脚本由 榆 开发，仅供学习交流使用。" })
 
--- ✅ 玩家进出提示 Toggle（已接入）
-TabHome:CreateToggle({
+--// ===== 游戏脚本 =====
+
+-- ✅ 玩家进出提示 Toggle（放在游戏脚本页）
+local PlayerNotifyEnabled = true
+
+TabGame:CreateToggle({
     Name = "玩家进出提示",
     CurrentValue = true,
     Callback = function(v)
-        _G.PlayerNotify.SetEnabled(v)
+        PlayerNotifyEnabled = v
     end
 })
 
---// ===== 游戏脚本 =====
+-- ✅ 安全的 Notify 封装
+local function SafeNotify(title, content)
+    if not PlayerNotifyEnabled then return end
+    pcall(function()
+        Rayfield:Notify({
+            Title = title,
+            Content = content,
+            Duration = 3
+        })
+    end)
+end
+
+-- ✅ 玩家监听（关键）
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+Players.PlayerAdded:Connect(function(plr)
+    if plr ~= LocalPlayer then
+        SafeNotify("玩家加入", plr.Name .. " 进入了游戏")
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(plr)
+    if plr ~= LocalPlayer then
+        SafeNotify("玩家离开", plr.Name .. " 离开了游戏")
+    end
+end)
+
+-- ✅ 初始化：提示当前已在的玩家
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr ~= LocalPlayer then
+        SafeNotify("当前在线", plr.Name)
+    end
+end
+
+-- ===== 动物医院 =====
 TabGame:CreateSection("动物医院")
 TabGame:CreateButton({
     Name = "动物医院",
     Callback = function()
-        Rayfield:Notify({ Title="加载中", Content="正在加载动物医院脚本...", Duration=3 })
+        Rayfield:Notify({ Title="加载中", Content="正在加载动物医院...", Duration=3 })
         local s, err = pcall(function()
             script_key = "umjjkMsWDMFEhzyhERlOwQihGFQYgGGp"
             loadstring(game:HttpGet("https://raw.githubusercontent.com/caomod2077/Script/refs/heads/main/FN_AnimalHospital.lua"))()
@@ -102,6 +96,7 @@ TabGame:CreateButton({
     end
 })
 
+-- ===== 夜脚本 =====
 TabGame:CreateSection("夜脚本")
 TabGame:CreateButton({
     Name = "夜脚本",
@@ -118,6 +113,7 @@ TabGame:CreateButton({
     end
 })
 
+-- ===== 叶脚本 =====
 TabGame:CreateSection("叶脚本")
 TabGame:CreateButton({
     Name = "叶脚本",
@@ -134,12 +130,11 @@ TabGame:CreateButton({
     end
 })
 
---// ===== 关于脚本 =====
+--// ===== 关于 =====
 TabAbout:CreateSection("脚本信息")
-TabAbout:CreateParagraph({ Title = "冰缝合脚本 V1.0", Content = "集成 UI + 玩家提示 + 多脚本加载。" })
+TabAbout:CreateParagraph({ Title = "冰缝合脚本 V1.1", Content = "新增玩家进出提示功能。" })
 TabAbout:CreateLabel("开发者：榆 QQ3347313900")
-TabAbout:CreateLabel("版本：V1.0")
+TabAbout:CreateLabel("版本：V1.1")
 TabAbout:CreateLabel("状态：学习用途")
 TabAbout:CreateSection("系统")
 TabAbout:CreateButton({ Name = "关闭 UI", Callback = function() Rayfield:Destroy() end })
-TabAbout:CreateToggle({ Name = "开关五", CurrentValue = false, Callback = function() end })
