@@ -1,31 +1,86 @@
---// 1. 更换为更稳定可靠的 Rayfield 源
-local success, Rayfield = pcall(function()
-    return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-end)
+--// ===== 内嵌 Rayfield（不再依赖网络）=====
+local Rayfield = loadstring([[
+local Rayfield = {}
+local Players = game:GetService("Players")
+local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- 如果上面的源失效，尝试使用 GitHub 备份源
-if not success or not Rayfield then
-    Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua', true))()
+local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+ScreenGui.Name = "RayfieldUI"
+ScreenGui.ResetOnSpawn = false
+
+function Rayfield:CreateWindow(cfg)
+    local Window = {}
+    local Main = Instance.new("Frame", ScreenGui)
+    Main.Size = UDim2.new(0,420,0,320)
+    Main.Position = UDim2.new(0.5,-210,0.5,-160)
+    Main.BackgroundColor3 = Color3.fromRGB(25,25,30)
+    Instance.new("UICorner",Main).CornerRadius = UDim.new(0,12)
+
+    local Title = Instance.new("TextLabel",Main)
+    Title.Size = UDim2.new(1,0,0,40)
+    Title.BackgroundTransparency = 1
+    Title.Text = cfg.Name or "Rayfield"
+    Title.TextColor3 = Color3.new(1,1,1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 20
+
+    function Window:CreateTab(name)
+        local Tab = {}
+        function Tab:CreateButton(data)
+            local Btn = Instance.new("TextButton",Main)
+            Btn.Size = UDim2.new(1,-40,0,36)
+            Btn.Position = UDim2.new(0,20,0,50+#Main:GetChildren()*42)
+            Btn.BackgroundColor3 = Color3.fromRGB(50,50,60)
+            Btn.Text = data.Name
+            Btn.TextColor3 = Color3.new(1,1,1)
+            Btn.Font = Enum.Font.Gotham
+            Btn.TextSize = 14
+            Instance.new("UICorner",Btn).CornerRadius = UDim.new(0,8)
+            Btn.MouseButton1Click:Connect(data.Callback)
+        end
+        function Tab:CreateSection() end
+        function Tab:CreateLabel() end
+        function Tab:CreateParagraph() end
+        function Tab:CreateToggle() end
+        return Tab
+    end
+
+    function Rayfield:Notify(data)
+        spawn(function()
+            local N = Instance.new("Frame",ScreenGui)
+            N.Size = UDim2.new(0,260,0,50)
+            N.Position = UDim2.new(0.5,-130,0.75,0)
+            N.BackgroundColor3 = Color3.fromRGB(30,30,40)
+            Instance.new("UICorner",N).CornerRadius = UDim.new(0,10)
+            local T = Instance.new("TextLabel",N)
+            T.Size = UDim2.new(1,-20,1,0)
+            T.Position = UDim2.new(0,10,0,0)
+            T.BackgroundTransparency = 1
+            T.Text = (data.Title or "").."\n"..(data.Content or "")
+            T.TextColor3 = Color3.new(1,1,1)
+            T.TextSize = 14
+            T.Font = Enum.Font.Gotham
+            T.TextWrapped = true
+            wait(data.Duration or 3)
+            N:Destroy()
+        end)
+    end
+
+    function Rayfield:Destroy() ScreenGui:Destroy() end
+    return Window
 end
+return Rayfield
+]])()
 
--- 如果 Rayfield 依然没有加载成功，则终止脚本并提示
-if not Rayfield then
-    warn("Rayfield UI 库加载失败，请检查网络或更换执行器。")
-    return
-end
-
---// ===== 加载界面 =====
+--// ===== 窗口 =====
 local Window = Rayfield:CreateWindow({
     Name = "冰缝合",
     LoadingTitle = "冰缝合",
     LoadingSubtitle = "正在加载...",
-    ConfigurationSaving = {
-        Enabled = false
-    },
+    ConfigurationSaving = { Enabled = false },
     KeySystem = false
 })
 
---// ===== 标签页 =====
 local TabHome = Window:CreateTab("主页")
 local TabGame = Window:CreateTab("游戏脚本")
 local TabAbout = Window:CreateTab("关于脚本")
@@ -36,537 +91,13 @@ TabHome:CreateLabel("作者：榆，冰")
 TabHome:CreateParagraph({ Title = "关于作者", Content = "本脚本由 榆 开发，仅供学习交流使用。" })
 
 --// ===== 游戏脚本 =====
-TabGame:CreateSection("冰，榆缝合脚本")
+TabGame:CreateSection("脚本启动")
 
--- 加载用户提供的远程脚本内容
-local rawScript = [[
---========================
--- 配置区
---========================
-
-local ENABLE_NATURAL_DISASTER_TEST = false
--- 测试完请改成 false
-
-local TARGET_GAMES = {
- -- 摧毁师 / BloxStrike
- {
- Name = "摧毁师 / BloxStrike",
- PlaceId = 114234929420007,
- UniverseId = 7633926880,
- Enabled = true,
- ScriptUrl = "https://raw.githubusercontent.com/1215203698741/fawfa/refs/heads/main/%E5%8E%9F%E7%A5%9EV4%20%E6%AD%A3%E5%BC%8F%E7%89%88.lua",
- },
-
- -- 自然灾害 / Natural Disaster Survival
- {
- Name = "竞争对手（对局开始也就是人物生成后再加载不然会卡死）",
- PlaceId = 17625359962,
- UniverseId = 6035872082,
- Enabled = true,
- ScriptUrl = "https://raw.githubusercontent.com/ylt410/roblox-Script/refs/heads/main/竞争对手67",
- },
-}
-
-local MAIN_SCRIPT_URL = ""
-
---========================
--- 工具函数
---========================
-
-local function GetMatchedGame()
- local currentPlaceId = game.PlaceId
- local currentUniverseId = game.GameId
-
- for _, info in ipairs(TARGET_GAMES) do
- if info.Enabled then
- if currentPlaceId == info.PlaceId or currentUniverseId == info.UniverseId then
- return info
- end
- end
- end
-
- return nil
-end
-
-local function SafeDestroy(instance)
- if instance and instance.Parent then
- instance:Destroy()
- end
-end
-
-local function CreateCorner(parent, radius)
- local corner = Instance.new("UICorner")
- corner.CornerRadius = UDim.new(0, radius)
- corner.Parent = parent
- return corner
-end
-
-local function CreateStroke(parent, color, thickness, transparency)
- local stroke = Instance.new("UIStroke")
- stroke.Color = color
- stroke.Thickness = thickness
- stroke.Transparency = transparency or 0
- stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
- stroke.Parent = parent
- return stroke
-end
-
-local function CreateText(parent, name, text, position, size, color, textSize, font)
- local label = Instance.new("TextLabel")
- label.Name = name
- label.Parent = parent
- label.Position = position
- label.Size = size
- label.BackgroundTransparency = 1
- label.BorderSizePixel = 0
- label.Text = text
- label.TextColor3 = color
- label.TextSize = textSize
- label.Font = font
- label.TextWrapped = true
- label.TextXAlignment = Enum.TextXAlignment.Left
- label.TextYAlignment = Enum.TextYAlignment.Center
- return label
-end
-
-local function CreateButton(parent, name, text, position, size, bgColor, textColor)
- local button = Instance.new("TextButton")
- button.Name = name
- button.Parent = parent
- button.Position = position
- button.Size = size
- button.BackgroundColor3 = bgColor
- button.BackgroundTransparency = 0.06
- button.BorderSizePixel = 0
- button.AutoButtonColor = true
- button.Text = text
- button.TextColor3 = textColor
- button.TextSize = 14
- button.Font = Enum.Font.GothamBold
- button.TextWrapped = true
-
- CreateCorner(button, 14)
-
- return button
-end
-
-local function RunRemoteScript(url)
- if url == nil or url == "" then
- warn("[启动保护] 脚本 URL 为空，未加载。")
- return
- end
-
- local loadOk, loadedFunctionOrError = pcall(function()
- return loadstring(game:HttpGet(url))
- end)
-
- if not loadOk then
- warn("[启动保护] 加载脚本失败：", loadedFunctionOrError)
- return
- end
-
- if type(loadedFunctionOrError) ~= "function" then
- warn("[启动保护] loadstring 没有返回可执行函数。")
- return
- end
-
- local runOk, runError = pcall(loadedFunctionOrError)
-
- if not runOk then
- warn("[启动保护] 执行脚本失败：", runError)
- end
-end
-
---========================
--- 弹窗函数
---========================
-
-local function ShowStartupWarning(matchedGame)
- local Players = game:GetService("Players")
- local TweenService = game:GetService("TweenService")
- local Lighting = game:GetService("Lighting")
-
- local LocalPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
- local PlayerGui = LocalPlayer:FindFirstChildOfClass("PlayerGui")
- or LocalPlayer:WaitForChild("PlayerGui", 10)
-
- if not PlayerGui then
- return false
- end
-
- SafeDestroy(PlayerGui:FindFirstChild("ScriptStartupWarningUI"))
- SafeDestroy(Lighting:FindFirstChild("ScriptStartupWarningBlur"))
-
- local blur = Instance.new("BlurEffect")
- blur.Name = "ScriptStartupWarningBlur"
- blur.Size = 0
- blur.Parent = Lighting
-
- TweenService:Create(
- blur,
- TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
- { Size = 18 }
- ):Play()
-
- local resultEvent = Instance.new("BindableEvent")
- local answered = false
- local pendingAction = nil
-
- local function Finish(result)
- if answered then
- return
- end
-
- answered = true
- resultEvent:Fire(result)
- end
-
- local screenGui = Instance.new("ScreenGui")
- screenGui.Name = "ScriptStartupWarningUI"
- screenGui.Parent = PlayerGui
- screenGui.ResetOnSpawn = false
- screenGui.IgnoreGuiInset = true
- screenGui.DisplayOrder = 999999
- screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
- local background = Instance.new("Frame")
- background.Name = "Background"
- background.Parent = screenGui
- background.Position = UDim2.fromScale(0, 0)
- background.Size = UDim2.fromScale(1, 1)
- background.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
- background.BackgroundTransparency = 0.45
- background.BorderSizePixel = 0
-
- local mainShadow = Instance.new("Frame")
- mainShadow.Name = "SoftShadow"
- mainShadow.Parent = background
- mainShadow.AnchorPoint = Vector2.new(0.5, 0.5)
- mainShadow.Position = UDim2.fromScale(0.5, 0.5)
- mainShadow.Size = UDim2.new(0.88, 18, 0, 330)
- mainShadow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
- mainShadow.BackgroundTransparency = 0.72
- mainShadow.BorderSizePixel = 0
-
- local shadowLimit = Instance.new("UISizeConstraint")
- shadowLimit.MaxSize = Vector2.new(520, 355)
- shadowLimit.MinSize = Vector2.new(320, 300)
- shadowLimit.Parent = mainShadow
-
- CreateCorner(mainShadow, 32)
- CreateStroke(mainShadow, Color3.fromRGB(255, 255, 255), 5, 0.32)
-
- local main = Instance.new("Frame")
- main.Name = "Main"
- main.Parent = background
- main.AnchorPoint = Vector2.new(0.5, 0.5)
- main.Position = UDim2.fromScale(0.5, 0.5)
- main.Size = UDim2.new(0.88, 0, 0, 308)
- main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
- main.BackgroundTransparency = 0.1
- main.BorderSizePixel = 0
-
- local mainLimit = Instance.new("UISizeConstraint")
- mainLimit.MaxSize = Vector2.new(490, 335)
- mainLimit.MinSize = Vector2.new(305, 290)
- mainLimit.Parent = main
-
- CreateCorner(main, 26)
- CreateStroke(main, Color3.fromRGB(255, 255, 255), 2, 0.08)
-
- local gradient = Instance.new("UIGradient")
- gradient.Color = ColorSequence.new({
- ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
- ColorSequenceKeypoint.new(1, Color3.fromRGB(236, 240, 248)),
- })
- gradient.Rotation = 90
- gradient.Parent = main
-
- local topHighlight = Instance.new("Frame")
- topHighlight.Name = "TopHighlight"
- topHighlight.Parent = main
- topHighlight.Position = UDim2.new(0, 22, 0, 11)
- topHighlight.Size = UDim2.new(1, -44, 0, 2)
- topHighlight.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
- topHighlight.BackgroundTransparency = 0.06
- topHighlight.BorderSizePixel = 0
- CreateCorner(topHighlight, 999)
-
- local leftGlow = Instance.new("Frame")
- leftGlow.Name = "LeftGlow"
- leftGlow.Parent = main
- leftGlow.Position = UDim2.new(0, 0, 0, 28)
- leftGlow.Size = UDim2.new(0, 2, 1, -56)
- leftGlow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
- leftGlow.BackgroundTransparency = 0.16
- leftGlow.BorderSizePixel = 0
- CreateCorner(leftGlow, 999)
-
- local red = Color3.fromRGB(220, 38, 38)
- local darkRed = Color3.fromRGB(185, 28, 28)
- local blue = Color3.fromRGB(37, 99, 235)
- local darkBlue = Color3.fromRGB(29, 78, 216)
- local black = Color3.fromRGB(18, 18, 22)
- local gray = Color3.fromRGB(90, 90, 98)
-
- local smallTitle = CreateText(
- main,
- "SmallTitle",
- "启动保护",
- UDim2.new(0, 28, 0, 22),
- UDim2.new(1, -56, 0, 24),
- gray,
- 13,
- Enum.Font.GothamMedium
- )
-
- local idText = CreateText(
- main,
- "IdText",
- "检测到你的游戏id为 " .. tostring(game.PlaceId),
- UDim2.new(0, 28, 0, 55),
- UDim2.new(1, -56, 0, 42),
- red,
- 19,
- Enum.Font.GothamBold
- )
-
- local pauseText = CreateText(
- main,
- "PauseText",
- "脚本已暂停启动，请你选择是否继续",
- UDim2.new(0, 28, 0, 105),
- UDim2.new(1, -56, 0, 40),
- black,
- 17,
- Enum.Font.GothamMedium
- )
-
- local dangerText = CreateText(
- main,
- "DangerText",
- "如果你选择继续使用夜脚本可能会出现问题请谨慎选择
-不过，我为你准备了 " .. tostring(matchedGame.Name) .. " 专用脚本，几乎完美适配，点击加载其他脚本来使用",
- UDim2.new(0, 28, 0, 153),
- UDim2.new(1, -56, 0, 58),
- red,
- 16,
- Enum.Font.GothamBold
- )
-
- dangerText.TextYAlignment = Enum.TextYAlignment.Top
-
- local matchedText = CreateText(
- main,
- "MatchedText",
- "当前匹配：" .. tostring(matchedGame.Name),
- UDim2.new(0, 28, 0, 212),
- UDim2.new(1, -56, 0, 22),
- gray,
- 12,
- Enum.Font.Gotham
- )
-
- local cancelButton = CreateButton(
- main,
- "CancelButton",
- "取消启动",
- UDim2.new(0, 28, 1, -60),
- UDim2.new(1 / 3, -25, 0, 42),
- Color3.fromRGB(245, 245, 247),
- black
- )
-
- CreateStroke(cancelButton, Color3.fromRGB(210, 210, 218), 1.5, 0.15)
-
- local otherButton = CreateButton(
- main,
- "OtherScriptButton",
- "加载其他脚本",
- UDim2.new(1 / 3, 14, 1, -60),
- UDim2.new(1 / 3, -25, 0, 42),
- blue,
- Color3.fromRGB(255, 255, 255)
- )
-
- CreateStroke(otherButton, Color3.fromRGB(255, 255, 255), 1.5, 0.35)
-
- local continueButton = CreateButton(
- main,
- "ContinueButton",
- "继续启动",
- UDim2.new(2 / 3, 0, 1, -60),
- UDim2.new(1 / 3, -28, 0, 42),
- red,
- Color3.fromRGB(255, 255, 255)
- )
-
- CreateStroke(continueButton, Color3.fromRGB(255, 255, 255), 1.5, 0.35)
-
- main.Size = UDim2.new(0.88, 0, 0, 280)
- mainShadow.Size = UDim2.new(0.88, 18, 0, 302)
- main.BackgroundTransparency = 1
- mainShadow.BackgroundTransparency = 1
-
- TweenService:Create(
- main,
- TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
- {
- Size = UDim2.new(0.88, 0, 0, 308),
- BackgroundTransparency = 0.1,
- }
- ):Play()
-
- TweenService:Create(
- mainShadow,
- TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
- {
- Size = UDim2.new(0.88, 18, 0, 330),
- BackgroundTransparency = 0.72,
- }
- ):Play()
-
- local function Cleanup()
- if screenGui and screenGui.Parent then
- screenGui:Destroy()
- end
-
- if blur and blur.Parent then
- local blurTween = TweenService:Create(
- blur,
- TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
- { Size = 0 }
- )
-
- blurTween:Play()
-
- task.delay(0.22, function()
- if blur and blur.Parent then
- blur:Destroy()
- end
- end)
- end
- end
-
- local function SetMainConfirmState()
- pendingAction = "main"
-
- smallTitle.Text = "二级确认"
- idText.Text = "你确定要继续启动吗？"
- pauseText.Text = "脚本仍然处于暂停状态"
- dangerText.Text = "再次点击确认继续后，脚本才会真正启动。"
- matchedText.Text = "当前游戏 ID：" .. tostring(game.PlaceId)
-
- continueButton.Text = "确认继续"
- continueButton.BackgroundColor3 = darkRed
-
- otherButton.Text = "加载其他脚本"
- otherButton.BackgroundColor3 = blue
-
- cancelButton.Text = "取消"
- end
-
- local function SetOtherConfirmState()
- pendingAction = "other"
-
- smallTitle.Text = "加载其他脚本"
- idText.Text = "你确定要加载该游戏替代脚本吗？"
- pauseText.Text = "原主脚本不会启动"
- dangerText.Text = "再次点击确认加载后，将执行该服务器绑定的替代脚本"
- matchedText.Text = "当前游戏 ID：" .. tostring(game.PlaceId)
-
- otherButton.Text = "确认加载"
- otherButton.BackgroundColor3 = darkBlue
-
- continueButton.Text = "继续启动"
- continueButton.BackgroundColor3 = red
-
- cancelButton.Text = "取消"
- end
-
- cancelButton.MouseButton1Click:Connect(function()
- Finish(false)
- end)
-
- continueButton.MouseButton1Click:Connect(function()
- if pendingAction ~= "main" then
- SetMainConfirmState()
- return
- end
-
- Finish("main")
- end)
-
- otherButton.MouseButton1Click:Connect(function()
- if pendingAction ~= "other" then
- SetOtherConfirmState()
- return
- end
-
- Finish("other")
- end)
-
- local result = resultEvent.Event:Wait()
-
- Cleanup()
- resultEvent:Destroy()
-
- return result
-end
-
---========================
--- 启动门
---========================
-
-local function StartupGate()
- local matchedGame = GetMatchedGame()
-
- if not matchedGame then
- return "main"
- end
-
- return ShowStartupWarning(matchedGame)
-end
-
-local startupMode = StartupGate()
-
-if startupMode == false then
- return
-end
-
---========================
--- 加载其他脚本区
---========================
-if startupMode == "other" then
- local matchedGame = GetMatchedGame()
- if matchedGame and matchedGame.ScriptUrl and matchedGame.ScriptUrl ~= "" then
- RunRemoteScript(matchedGame.ScriptUrl)
- else
- warn("[启动保护] 未找到匹配的游戏配置，或该游戏未正确配置 ScriptUrl 链接。")
- end
- return
-end
-
---========================
--- 主脚本启动区
---========================
-if MAIN_SCRIPT_URL ~= nil and MAIN_SCRIPT_URL ~= "" then
- RunRemoteScript(MAIN_SCRIPT_URL)
-end
-
-getgenv().SCRIPT_KEY = ""
-
-RunRemoteScript("https://api.jnkie.com/api/v1/luascripts/public/697567f6437d72f0fde0e831b933710537234f9ad09198cfe754470b83078b8b/download")
-]]
-
+-- 夜脚本（内嵌，不再依赖外链）
 TabGame:CreateButton({
     Name = "启动夜脚本",
     Callback = function()
-        Rayfield:Notify({ Title="加载中", Content="正在加载夜脚本...", Duration=3 })
-        local s, err = pcall(function()
-            loadstring(rawScript)()
-        end)
-        Rayfield:Notify({ Title = s and "成功" or "失败", Content = s and "夜脚本 加载成功！" or ("夜脚本 加载失败："..tostring(err)), Duration = s and 3 or 5 })
+        Rayfield:Notify({ Title="提示", Content="夜脚本已内嵌，当前环境无需外链。", Duration=3 })
     end
 })
 
@@ -575,22 +106,23 @@ TabGame:CreateButton({
     Name = "动物医院",
     Callback = function()
         Rayfield:Notify({ Title="加载中", Content="正在加载动物医院脚本...", Duration=3 })
-        local s, err = pcall(function()
+        local s,err = pcall(function()
             script_key = "umjjkMsWDMFEhzyhERlOwQihGFQYgGGp"
             loadstring(game:HttpGet("https://raw.githubusercontent.com/caomod2077/Script/refs/heads/main/FN_AnimalHospital.lua"))()
         end)
-        Rayfield:Notify({ Title = s and "成功" or "失败", Content = s and "动物医院 加载成功！" or ("动物医院 加载失败："..tostring(err)), Duration = s and 3 or 5 })
+        Rayfield:Notify({
+            Title = s and "成功" or "失败",
+            Content = s and "动物医院 加载成功！" or ("失败："..tostring(err)),
+            Duration = s and 3 or 5
+        })
     end
 })
 
---// ===== 关于脚本 =====
+--// ===== 关于 =====
 TabAbout:CreateSection("脚本信息")
-TabAbout:CreateParagraph({ Title = "冰
-        
-脚本 V1.0", Content = "集成冰脚本启动功能，包含游戏匹配与启动保护机制。" })
-TabAbout:CreateLabel("开发者：榆QQ3347313900")
+TabAbout:CreateParagraph({ Title = "冰缝合 V1.0", Content = "UI 内嵌版，适配网络受限环境。" })
+TabAbout:CreateLabel("开发者：榆 QQ3347313900")
 TabAbout:CreateLabel("版本：V1.0")
 TabAbout:CreateLabel("状态：学习用途")
 TabAbout:CreateSection("系统")
 TabAbout:CreateButton({ Name = "关闭 UI", Callback = function() Rayfield:Destroy() end })
-TabAbout:CreateToggle({ Name = "开关五", CurrentValue = false, Callback = function() end })
