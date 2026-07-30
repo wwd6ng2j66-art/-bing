@@ -62,6 +62,19 @@ TabGame:CreateButton({
     end
 })
 
+--// ===== 叶脚本 =====
+TabGame:CreateSection("叶脚本")
+TabGame:CreateButton({
+    Name = "叶脚本",
+    Callback = function()
+        Rayfield:Notify({ Title="加载中", Content="正在加载叶脚本...", Duration=3 })
+        local s, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/roblox-ye/QQ515966991/refs/heads/main/ROBLOX-CNVIP-XIAOYE.lua"))()
+        end)
+        Rayfield:Notify({ Title = s and "成功" or "失败", Content = s and "叶脚本 加载成功！" or ("叶脚本 加载失败："..tostring(err)), Duration = s and 3 or 5 })
+    end
+})
+
 --// ===== 关于脚本 =====
 TabAbout:CreateSection("脚本信息")
 TabAbout:CreateParagraph({ Title = "冰缝合脚本 V1.0", Content = "纯 UI 演示版本，所有按钮与开关均为空功能，仅用于界面布局学习。" })
@@ -71,3 +84,4 @@ TabAbout:CreateLabel("状态：学习用途")
 TabAbout:CreateSection("系统")
 TabAbout:CreateButton({ Name = "关闭 UI", Callback = function() Rayfield:Destroy() end })
 TabAbout:CreateToggle({ Name = "开关五", CurrentValue = false, Callback = function() end })
+
