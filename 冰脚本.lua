@@ -1,41 +1,42 @@
---// 1. 更换为更稳定可靠的 Rayfield 源
+--// ============================================
+--         冰缝合脚本 V2.1 - iOS 玻璃风格
+--   玩家进出提示：右侧滑出 → 左侧平滑消失
+-- ============================================
+
+--// ===== 1. 加载 Rayfield UI 库 =====
 local success, Rayfield = pcall(function()
     return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 end)
 
--- 如果上面的源失效，尝试使用 GitHub 备份源
 if not success or not Rayfield then
     Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua', true))()
 end
 
--- 如果 Rayfield 依然没有加载成功，则终止脚本并提示
 if not Rayfield then
     warn("Rayfield UI 库加载失败，请检查网络或更换执行器。")
     return
 end
 
---// ===== 加载界面 =====
+--// ===== 2. 创建 Rayfield 窗口 =====
 local Window = Rayfield:CreateWindow({
     Name = "冰缝合脚本",
     LoadingTitle = "冰缝合脚本",
     LoadingSubtitle = "正在加载...",
-    ConfigurationSaving = {
-        Enabled = false
-    },
+    ConfigurationSaving = { Enabled = false },
     KeySystem = false
 })
 
---// ===== 标签页 =====
-local TabHome = Window:CreateTab("主页")
-local TabGame = Window:CreateTab("游戏脚本")
-local TabAbout = Window:CreateTab("关于脚本")
+local TabHome    = Window:CreateTab("主页")
+local TabGame    = Window:CreateTab("游戏脚本")
+local TabNotify  = Window:CreateTab("进出提示")
+local TabAbout   = Window:CreateTab("关于脚本")
 
---// ===== 主页 =====
+--// ===== 3. 主页 =====
 TabHome:CreateSection("作者信息")
 TabHome:CreateLabel("作者：榆")
 TabHome:CreateParagraph({ Title = "关于作者", Content = "本脚本由 榆 开发，仅供学习交流使用。" })
 
---// ===== 游戏脚本（动物医院 + RB脚本 + 夜脚本）=====
+--// ===== 4. 游戏脚本 =====
 TabGame:CreateSection("动物医院")
 TabGame:CreateButton({
     Name = "动物医院",
@@ -61,7 +62,6 @@ TabGame:CreateButton({
     end
 })
 
---// ===== 夜脚本 =====
 TabGame:CreateSection("夜脚本")
 TabGame:CreateButton({
     Name = "夜脚本",
@@ -74,12 +74,338 @@ TabGame:CreateButton({
     end
 })
 
---// ===== 关于脚本 =====
+TabGame:CreateSection("叶脚本")
+TabGame:CreateButton({
+    Name = "叶脚本",
+    Callback = function()
+        Rayfield:Notify({ Title="加载中", Content="正在加载叶脚本...", Duration=3 })
+        local s, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/roblox-ye/QQ515966991/refs/heads/main/ROBLOX-CNVIP-XIAOYE.lua"))()
+        end)
+        Rayfield:Notify({ Title = s and "成功" or "失败", Content = s and "叶脚本 加载成功！" or ("叶脚本 加载失败："..tostring(err)), Duration = s and 3 or 5 })
+    end
+})
+
+--// ============================================
+--   5. iOS 玻璃风格 - 玩家进出提示
+-- ============================================
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+-- 配置
+local NotifyEnabled   = true
+local MaxNotices      = 5
+local NoticeDuration  = 3.0
+local activeNotices   = {}
+
+-- 颜色方案（iOS 风格）
+local COLORS = {
+    JoinBG    = Color3.fromRGB(48, 209, 88),    -- iOS Green
+    LeaveBG   = Color3.fromRGB(255, 59, 48),    -- iOS Red
+    GlassTint = Color3.fromRGB(255, 255, 255),  -- 白色玻璃
+    Text      = Color3.fromRGB(255, 255, 255),
+    SubText   = Color3.fromRGB(230, 230, 230),
+}
+
+-- 创建 ScreenGui
+local NotifyGui = Instance.new("ScreenGui")
+NotifyGui.Name = "iOSNotifyGui"
+NotifyGui.ResetOnSpawn = false
+NotifyGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+NotifyGui.Parent = PlayerGui
+
+-- 右侧容器
+local RightContainer = Instance.new("Frame")
+RightContainer.Name = "RightContainer"
+RightContainer.Size = UDim2.new(0, 300, 1, -60)
+RightContainer.Position = UDim2.new(1, -310, 0, 30)
+RightContainer.BackgroundTransparency = 1
+RightContainer.ClipsDescendants = true
+RightContainer.Parent = NotifyGui
+
+local UIList = Instance.new("UIListLayout")
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+UIList.Padding = UDim.new(0, 12)
+UIList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+UIList.VerticalAlignment = Enum.VerticalAlignment.Top
+UIList.Parent = RightContainer
+
+-- 创建模糊背景（模拟 iOS 毛玻璃）
+local function createBlurBackground(parent, tintColor)
+    -- 用多层半透明圆角框叠加模拟玻璃模糊效果
+    local blurFrame = Instance.new("Frame")
+    blurFrame.Size = UDim2.new(1, 0, 1, 0)
+    blurFrame.BackgroundColor3 = tintColor
+    blurFrame.BackgroundTransparency = 0.75  -- 高透明 = 毛玻璃感
+    blurFrame.BorderSizePixel = 0
+    blurFrame.Parent = parent
+
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 16)
+    c.Parent = blurFrame
+
+    -- 第二层：更淡的白色叠加，增强玻璃光泽
+    local overlay = Instance.new("Frame")
+    overlay.Size = UDim2.new(1, 0, 0.5, 0)
+    overlay.Position = UDim2.new(0, 0, 0, 0)
+    overlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    overlay.BackgroundTransparency = 0.88
+    overlay.BorderSizePixel = 0
+    overlay.Parent = parent
+
+    local oc = Instance.new("UICorner")
+    oc.CornerRadius = UDim.new(0, 16)
+    oc.Parent = overlay
+
+    -- 第三层：微弱阴影模拟
+    local shadow = Instance.new("Frame")
+    shadow.Size = UDim2.new(1, 6, 1, 6)
+    shadow.Position = UDim2.new(0, -3, 0, -3)
+    shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.BackgroundTransparency = 0.92
+    shadow.BorderSizePixel = 0
+    shadow.ZIndex = -1
+    shadow.Parent = parent
+
+    local sc = Instance.new("UICorner")
+    sc.CornerRadius = UDim.new(0, 18)
+    sc.Parent = shadow
+
+    return blurFrame
+end
+
+-- 创建单条提示
+local function createNotice(plrName, isJoin)
+    if not NotifyEnabled then return end
+
+    -- 超过上限移除最旧
+    if #activeNotices >= MaxNotices then
+        local oldest = table.remove(activeNotices, 1)
+        if oldest and oldest.Parent then oldest:Destroy() end
+    end
+
+    -- === 主卡片 ===
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(0, 280, 0, 56)
+    card.BackgroundTransparency = 1  -- 由子元素负责视觉
+    card.BorderSizePixel = 0
+    card.ClipsDescendants = true
+    card.LayoutOrder = tick()
+    card.Parent = RightContainer
+
+    -- 圆角
+    local cardCorner = Instance.new("UICorner")
+    cardCorner.CornerRadius = UDim.new(0, 16)
+    cardCorner.Parent = card
+
+    -- 玻璃背景（带色调）
+    local tintColor = isJoin and Color3.fromRGB(48, 209, 88) or Color3.fromRGB(255, 59, 48)
+    createBlurBackground(card, tintColor)
+
+    -- === 左侧色条（iOS 风格细条）===
+    local indicator = Instance.new("Frame")
+    indicator.Size = UDim2.new(0, 3, 0.6, 0)
+    indicator.Position = UDim2.new(0, 14, 0.2, 0)
+    indicator.BackgroundColor3 = COLORS.GlassTint
+    indicator.BackgroundTransparency = 0.2
+    indicator.BorderSizePixel = 0
+    indicator.Parent = card
+
+    local indCorner = Instance.new("UICorner")
+    indCorner.CornerRadius = UDim.new(1, 0)
+    indCorner.Parent = indicator
+
+    -- === 文字容器 ===
+    local textX = 28
+    local textW = 280 - textX - 16
+
+    -- 标题
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(0, textW, 0, 22)
+    title.Position = UDim2.new(0, textX, 0, 8)
+    title.BackgroundTransparency = 1
+    title.Text = isJoin and "玩家加入" or "玩家离开"
+    title.TextColor3 = COLORS.Text
+    title.TextSize = 15
+    title.Font = Enum.Font.GothamSemibold
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.TextTransparency = 1
+    title.Parent = card
+
+    -- 玩家名
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(0, textW, 0, 18)
+    nameLabel.Position = UDim2.new(0, textX, 0, 30)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = plrName
+    nameLabel.TextColor3 = COLORS.SubText
+    nameLabel.TextSize = 13
+    nameLabel.Font = Enum.Font.Gotham
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    nameLabel.TextTransparency = 1
+    nameLabel.Parent = card
+
+    -- === 右侧时间小圆点（装饰）===
+    local dot = Instance.new("Frame")
+    dot.Size = UDim2.new(0, 8, 0, 8)
+    dot.Position = UDim2.new(1, -18, 0, 14)
+    dot.BackgroundColor3 = COLORS.GlassTint
+    dot.BackgroundTransparency = 0.3
+    dot.BorderSizePixel = 0
+    dot.Parent = card
+    local dotC = Instance.new("UICorner")
+    dotC.CornerRadius = UDim.new(1, 0)
+    dotC.Parent = dot
+
+    -- 初始状态：在屏幕右侧外面
+    card.Position = UDim2.new(0, 300, 0, 0)
+
+    table.insert(activeNotices, card)
+
+    -- ========== 动画 ==========
+
+    -- 缓动函数
+    local EASE_OUT  = Enum.EasingStyle.Quart
+    local EASE_IN   = Enum.EasingStyle.Quart
+    local EASE_SMOOTH = Enum.EasingStyle.Sine
+
+    -- ① 滑入：从右侧进入到位
+    TweenService:Create(card, TweenInfo.new(0.45, EASE_OUT, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0, 0, 0, 0)
+    }):Play()
+
+    -- 文字淡入（稍微延迟一点，更自然）
+    TweenService:Create(title, TweenInfo.new(0.35, EASE_SMOOTH), {
+        TextTransparency = 0
+    }):Play()
+    TweenService:Create(nameLabel, TweenInfo.new(0.35, EASE_SMOOTH), {
+        TextTransparency = 0
+    }):Play()
+    TweenService:Create(dot, TweenInfo.new(0.35, EASE_SMOOTH), {
+        BackgroundTransparency = 0.3
+    }):Play()
+
+    -- ② 停留后：向左平滑滑出 + 渐隐
+    task.delay(NoticeDuration, function()
+        -- 卡片整体左移 + 透明
+        TweenService:Create(card, TweenInfo.new(0.7, EASE_IN, Enum.EasingDirection.InOut), {
+            Position = UDim2.new(0, -300, 0, 0),  -- 向左滑出屏幕
+        }):Play()
+
+        -- 文字渐隐
+        TweenService:Create(title, TweenInfo.new(0.6, EASE_SMOOTH), {
+            TextTransparency = 1
+        }):Play()
+        TweenService:Create(nameLabel, TweenInfo.new(0.6, EASE_SMOOTH), {
+            TextTransparency = 1
+        }):Play()
+        TweenService:Create(dot, TweenInfo.new(0.5, EASE_SMOOTH), {
+            BackgroundTransparency = 1
+        }):Play()
+
+        -- 卡片整体透明度也渐隐（玻璃效果慢慢消失）
+        for _, child in ipairs(card:GetChildren()) do
+            if child:IsA("Frame") then
+                TweenService:Create(child, TweenInfo.new(0.6, EASE_SMOOTH), {
+                    BackgroundTransparency = child.BackgroundTransparency + 0.25
+                }):Play()
+            end
+        end
+
+        -- 销毁
+        task.delay(0.8, function()
+            if card and card.Parent then
+                card:Destroy()
+            end
+            for i, v in ipairs(activeNotices) do
+                if v == card then
+                    table.remove(activeNotices, i)
+                    break
+                end
+            end
+        end)
+    end)
+end
+
+-- 监听玩家进出
+Players.PlayerAdded:Connect(function(plr)
+    if plr == player then return end
+    createNotice(plr.Name, true)
+end)
+
+Players.PlayerRemoving:Connect(function(plr)
+    if plr == player then return end
+    createNotice(plr.Name, false)
+end)
+
+-- 已在服务器玩家
+task.defer(function()
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            createNotice(plr.Name, true)
+        end
+    end
+end)
+
+--// ===== 6. 进出提示设置页 =====
+TabNotify:CreateSection("🎨 提示外观")
+
+TabNotify:CreateToggle({
+    Name = "启用玩家进出提示",
+    CurrentValue = true,
+    Callback = function(value)
+        NotifyEnabled = value
+        NotifyGui.Enabled = value
+    end
+})
+
+TabNotify:CreateSlider({
+    Name = "提示停留时间（秒）",
+    Range = {1, 8},
+    Increment = 0.5,
+    CurrentValue = 3.0,
+    Callback = function(value)
+        NoticeDuration = value
+    end
+})
+
+TabNotify:CreateSlider({
+    Name = "最大同时显示条数",
+    Range = {1, 10},
+    Increment = 1,
+    CurrentValue = 5,
+    Callback = function(value)
+        MaxNotices = math.floor(value)
+    end
+})
+
+TabNotify:CreateSection("🧪 测试")
+
+TabNotify:CreateButton({
+    Name = "测试 - 玩家加入",
+    Callback = function()
+        createNotice("TestPlayer_Join", true)
+    end
+})
+
+TabNotify:CreateButton({
+    Name = "测试 - 玩家离开",
+    Callback = function()
+        createNotice("TestPlayer_Leave", false)
+    end
+})
+
+--// ===== 7. 关于脚本 =====
 TabAbout:CreateSection("脚本信息")
-TabAbout:CreateParagraph({ Title = "冰缝合脚本 V1.0", Content = "纯 UI 演示版本，所有按钮与开关均为空功能，仅用于界面布局学习。" })
-TabAbout:CreateLabel("开发者：榆QQ3347313900")
-TabAbout:CreateLabel("版本：V1.0")
-TabAbout:CreateLabel("状态：学习用途")
+TabAbout:CreateParagraph({ Title = "冰缝合脚本 V2.1", Content = "iOS 玻璃风格玩家进出提示，右侧滑出、左侧平滑消失。" })
+TabAbout:CreateLabel("开发者：榆 QQ3347313900")
+TabAbout:CreateLabel("版本：V2.1")
+TabAbout:CreateLabel("风格：iOS Glassmorphism")
 TabAbout:CreateSection("系统")
 TabAbout:CreateButton({ Name = "关闭 UI", Callback = function() Rayfield:Destroy() end })
 TabAbout:CreateToggle({ Name = "开关五", CurrentValue = false, Callback = function() end })
+
