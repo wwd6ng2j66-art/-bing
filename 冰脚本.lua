@@ -96,6 +96,33 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
 
+-- 新增：Lighting / 设备检测 / 全局 Blur 管理
+local Lighting = game:GetService("Lighting")
+local UserInputService = game:GetService("UserInputService")
+local isMobile = UserInputService.TouchEnabled
+
+-- 全局 Blur 管理（避免频繁开关）
+local blur = Lighting:FindFirstChildOfClass("BlurEffect")
+if not blur then
+    blur = Instance.new("BlurEffect")
+    blur.Parent = Lighting
+    blur.Size = 0
+end
+local activeBlurCount = 0
+local function enableGlobalBlur()
+    if activeBlurCount == 0 then
+        local target = isMobile and 4 or 8
+        TweenService:Create(blur, TweenInfo.new(0.35, Enum.EasingStyle.Sine), { Size = target }):Play()
+    end
+    activeBlurCount = activeBlurCount + 1
+end
+local function disableGlobalBlur()
+    activeBlurCount = math.max(0, activeBlurCount - 1)
+    if activeBlurCount == 0 then
+        TweenService:Create(blur, TweenInfo.new(0.35, Enum.EasingStyle.Sine), { Size = 0 }):Play()
+    end
+end
+
 -- 配置
 local NotifyEnabled   = true
 local MaxNotices      = 5
@@ -134,13 +161,16 @@ UIList.HorizontalAlignment = Enum.HorizontalAlignment.Right
 UIList.VerticalAlignment = Enum.VerticalAlignment.Top
 UIList.Parent = RightContainer
 
--- 创建模糊背景（模拟 iOS 毛玻璃）
+-- 可选：噪点贴图的 asset id（上传后填入），在手机上建议保守使用
+local NOISE_ASSET_ID = nil
+
+-- 创建模糊背景（模拟 iOS 毛玻璃） - 改良版
 local function createBlurBackground(parent, tintColor)
-    -- 用多层半透明圆角框叠加模拟玻璃模糊效果
+    -- 主模糊/色调层（半透明）
     local blurFrame = Instance.new("Frame")
     blurFrame.Size = UDim2.new(1, 0, 1, 0)
     blurFrame.BackgroundColor3 = tintColor
-    blurFrame.BackgroundTransparency = 0.75  -- 高透明 = 毛玻璃感
+    blurFrame.BackgroundTransparency = 0.78
     blurFrame.BorderSizePixel = 0
     blurFrame.Parent = parent
 
@@ -148,7 +178,40 @@ local function createBlurBackground(parent, tintColor)
     c.CornerRadius = UDim.new(0, 16)
     c.Parent = blurFrame
 
-    -- 第二层：更淡的白色叠加，增强玻璃光泽
+    -- 细边（切边高光）
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 1
+    stroke.Color = Color3.new(1, 1, 1)
+    stroke.Transparency = 0.85
+    stroke.Parent = blurFrame
+
+    -- 顶部高光（渐变条）——加强玻璃光泽感
+    local gloss = Instance.new("Frame")
+    gloss.Size = UDim2.new(1, -8, 0, 10)
+    gloss.Position = UDim2.new(0, 4, 0, 6)
+    gloss.BackgroundColor3 = Color3.new(1, 1, 1)
+    gloss.BackgroundTransparency = 0.92
+    gloss.BorderSizePixel = 0
+    gloss.ZIndex = blurFrame.ZIndex + 1
+    gloss.Parent = parent
+
+    local gCorner = Instance.new("UICorner")
+    gCorner.CornerRadius = UDim.new(0, 10)
+    gCorner.Parent = gloss
+
+    local gGrad = Instance.new("UIGradient")
+    gGrad.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
+    }
+    gGrad.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0.88),
+        NumberSequenceKeypoint.new(1, 1.0)
+    }
+    gGrad.Rotation = 90
+    gGrad.Parent = gloss
+
+    -- 半透明覆盖层（增强玻璃厚度感）
     local overlay = Instance.new("Frame")
     overlay.Size = UDim2.new(1, 0, 0.5, 0)
     overlay.Position = UDim2.new(0, 0, 0, 0)
@@ -161,19 +224,45 @@ local function createBlurBackground(parent, tintColor)
     oc.CornerRadius = UDim.new(0, 16)
     oc.Parent = overlay
 
-    -- 第三层：微弱阴影模拟
+    -- 轻微投影（放在 card 下层并略偏移以模拟浮起）
     local shadow = Instance.new("Frame")
     shadow.Size = UDim2.new(1, 6, 1, 6)
     shadow.Position = UDim2.new(0, -3, 0, -3)
     shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     shadow.BackgroundTransparency = 0.92
     shadow.BorderSizePixel = 0
-    shadow.ZIndex = -1
+    shadow.ZIndex = blurFrame.ZIndex - 1
     shadow.Parent = parent
 
     local sc = Instance.new("UICorner")
     sc.CornerRadius = UDim.new(0, 18)
     sc.Parent = shadow
+
+    -- 可选：微弱噪点层（需要上传到 Roblox 并替换 NOISE_ASSET_ID）
+    if NOISE_ASSET_ID and NOISE_ASSET_ID ~= "" then
+        local noise = Instance.new("ImageLabel")
+        noise.Size = UDim2.new(2, 0, 2, 0)
+        noise.Position = UDim2.new(-0.5, 0, -0.5, 0)
+        noise.BackgroundTransparency = 1
+        noise.Image = "rbxassetid://" .. NOISE_ASSET_ID
+        noise.ImageTransparency = 0.9
+        noise.ScaleType = Enum.ScaleType.Tile
+        noise.ZIndex = blurFrame.ZIndex + 1
+        noise.Parent = blurFrame
+
+        spawn(function()
+            while noise.Parent do
+                for i = 0, 1, 0.01 do
+                    noise.ImageRectOffset = Vector2.new(i*200, i*200)
+                    wait(isMobile and 0.06 or 0.03)
+                end
+                for i = 1, 0, -0.01 do
+                    noise.ImageRectOffset = Vector2.new(i*200, i*200)
+                    wait(isMobile and 0.06 or 0.03)
+                end
+            end
+        end)
+    end
 
     return blurFrame
 end
@@ -278,6 +367,9 @@ local function createNotice(plrName, isJoin)
         Position = UDim2.new(0, 0, 0, 0)
     }):Play()
 
+    -- 启用全局模糊（引用计数）
+    enableGlobalBlur()
+
     -- 文字淡入（稍微延迟一点，更自然）
     TweenService:Create(title, TweenInfo.new(0.35, EASE_SMOOTH), {
         TextTransparency = 0
@@ -315,6 +407,11 @@ local function createNotice(plrName, isJoin)
                 }):Play()
             end
         end
+
+        -- 在销毁前少���延迟然后关闭模糊（保持平滑过渡）
+        task.delay(0.9, function()
+            disableGlobalBlur()
+        end)
 
         -- 销毁
         task.delay(0.8, function()
@@ -408,4 +505,3 @@ TabAbout:CreateLabel("风格：iOS Glassmorphism")
 TabAbout:CreateSection("系统")
 TabAbout:CreateButton({ Name = "关闭 UI", Callback = function() Rayfield:Destroy() end })
 TabAbout:CreateToggle({ Name = "开关五", CurrentValue = false, Callback = function() end })
-
