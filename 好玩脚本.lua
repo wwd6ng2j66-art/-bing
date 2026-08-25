@@ -1,14 +1,10 @@
 -- ============================================================
--- wk 脚本 v2.9（完整修复 · 手机适配 · 跑马灯边框 · 虚拟摇杆飞行）
--- 修复/改动：
---   1) 加载界面改用 PlayerGui 父级，避免 CoreGui 权限报错
---   2) 主窗口边框加跑马灯（流动彩虹边框动画）
---   3) 移除【分析】页，导航恢复为 通用/飞行/战斗/传送
---   4) 飞行开关开启后弹出独立【移动控制盘】（虚拟摇杆）
---      - 摇杆控制飞行方向（前后左右）
---      - 右侧加速滑块/按钮控制速度
---      - 上升/下降按钮
---      - 适配手机触屏，PC 也可用鼠标拖摇杆
+-- wk 脚本 v2.9.1（功能全部可用 · 加载UI居中修正 · 自动弹主窗）
+-- 修复：
+--   1) 加载界面居中修正（统一用 AnchorPoint 0.5 + Position 0.5,0.5）
+--   2) 加载结束后自动弹出主窗口，避免"功能消失"假象
+--   3) 保留：跑马灯边框 / 防传送 / 彩虹天空 / 穿墙 / 飞行+摇杆盘 / ESP / 传送
+--   4) 无分析页
 -- ============================================================
 
 -- ==================== 服务与工具 ====================
@@ -30,32 +26,31 @@ p.CharacterAdded:Connect(function(c)
 end)
 
 local isTouch = u.TouchEnabled
+local Ctr = UDim.new -- 简写
 
--- ==================== 加载界面（3秒） ====================
+-- ==================== 加载界面（3秒 · 居中修正） ====================
 local loadGui = Instance.new("ScreenGui")
-loadGui.Name = "LoadGUI"
-loadGui.ResetOnSpawn = false
-loadGui.Parent = p:WaitForChild("PlayerGui") -- 直接用 PlayerGui，避免 CoreGui 权限问题
+loadGui.Name = "LoadGUI"; loadGui.ResetOnSpawn = false
+loadGui.Parent = p:WaitForChild("PlayerGui")
 
 local bg = Instance.new("Frame")
-bg.Size = UDim2.new(1,0,1,0)
-bg.BackgroundColor3 = Color3.fromRGB(0,0,0)
-bg.BackgroundTransparency = 0.55
-bg.Parent = loadGui
+bg.Size = UDim2.new(1,0,1,0); bg.BackgroundColor3 = Color3.fromRGB(0,0,0)
+bg.BackgroundTransparency = 0.55; bg.Parent = loadGui
 
+-- 居中容器：统一用 AnchorPoint(0.5,0.5) + Position(0.5,0.5) 彻底解决偏上
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = isTouch and UDim2.new(0.9,0,0,260) or UDim2.new(0,400,0,280)
-mainFrame.Position = UDim2.new(0.5,-(isTouch and 0 or 200),0.5,-140)
-mainFrame.AnchorPoint = isTouch and Vector2.new(0.5,0.5) or Vector2.new(0,0)
+mainFrame.Size = isTouch and UDim2.new(0,340,0,230) or UDim2.new(0,380,0,250)
+mainFrame.Position = UDim2.new(0.5,0,0.5,0)
+mainFrame.AnchorPoint = Vector2.new(0.5,0.5)
 mainFrame.BackgroundColor3 = Color3.fromRGB(18,18,18)
-mainFrame.BackgroundTransparency = 0.25
-mainFrame.BorderSizePixel = 0
-mainFrame.Parent = bg
--- 加载框也加个简易彩虹边框（外层略大一圈的彩色底框）
+mainFrame.BackgroundTransparency = 0.25; mainFrame.BorderSizePixel = 0; mainFrame.Parent = bg
+
+-- 加载框跑马灯外框
 local loadBorder = Instance.new("Frame")
-loadBorder.Size = UDim2.new(1,6,1,6); loadBorder.Position = UDim2.new(0,-3,0,-3)
-loadBorder.ZIndex = -1; loadBorder.BackgroundColor3 = Color3.fromRGB(0,120,255)
-loadBorder.BorderSizePixel = 0; loadBorder.Parent = mainFrame
+loadBorder.Size = UDim2.new(1,8,1,8); loadBorder.Position = UDim2.new(0.5,0,0.5,0)
+loadBorder.AnchorPoint = Vector2.new(0.5,0.5); loadBorder.ZIndex = -1
+loadBorder.BackgroundColor3 = Color3.fromRGB(0,120,255); loadBorder.BorderSizePixel = 0
+loadBorder.Parent = mainFrame
 local loadGrad = Instance.new("UIGradient"); loadGrad.Parent = loadBorder
 loadGrad.Color = ColorSequence.new({
 	ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
@@ -64,7 +59,6 @@ loadGrad.Color = ColorSequence.new({
 	ColorSequenceKeypoint.new(0.75, Color3.fromRGB(0,0,255)),
 	ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,255)),
 })
--- 让加载框底框随跑马灯旋转色相
 task.spawn(function()
 	local h = 0
 	while loadBorder and loadBorder.Parent do
@@ -75,25 +69,25 @@ task.spawn(function()
 end)
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,56); title.Position = UDim2.new(0,0,0.1,0)
+title.Size = UDim2.new(1,0,0,50); title.Position = UDim2.new(0,0,0.1,0)
 title.BackgroundTransparency = 1; title.Text = "wk 脚本"
 title.TextColor3 = Color3.fromRGB(255,255,255); title.TextScaled = true
 title.Font = Enum.Font.GothamBold; title.Parent = mainFrame
 
 local sub = Instance.new("TextLabel")
-sub.Size = UDim2.new(1,0,0,36); sub.Position = UDim2.new(0,0,0.3,0)
+sub.Size = UDim2.new(1,0,0,32); sub.Position = UDim2.new(0,0,0.3,0)
 sub.BackgroundTransparency = 1; sub.Text = "V2.9 · 正在处理数据"
 sub.TextColor3 = Color3.fromRGB(200,200,200); sub.TextScaled = true
 sub.Font = Enum.Font.SourceSans; sub.Parent = mainFrame
 
 local progText = Instance.new("TextLabel")
-progText.Size = UDim2.new(1,0,0,36); progText.Position = UDim2.new(0,0,0.48,0)
+progText.Size = UDim2.new(1,0,0,32); progText.Position = UDim2.new(0,0,0.48,0)
 progText.BackgroundTransparency = 1; progText.Text = "正在初始化引擎..0%"
 progText.TextColor3 = Color3.fromRGB(255,255,255); progText.TextScaled = true
 progText.Font = Enum.Font.SourceSans; progText.Parent = mainFrame
 
 local barBg = Instance.new("Frame")
-barBg.Size = UDim2.new(0.8,0,0,18); barBg.Position = UDim2.new(0.1,0,0.66,0)
+barBg.Size = UDim2.new(0.8,0,0,16); barBg.Position = UDim2.new(0.1,0,0.66,0)
 barBg.BackgroundColor3 = Color3.fromRGB(50,50,50); barBg.BorderSizePixel = 0; barBg.Parent = mainFrame
 
 local bar = Instance.new("Frame")
@@ -101,7 +95,7 @@ bar.Size = UDim2.new(0,0,1,0); bar.BackgroundColor3 = Color3.fromRGB(0,120,255)
 bar.BorderSizePixel = 0; bar.Parent = barBg
 
 local timerLabel = Instance.new("TextLabel")
-timerLabel.Size = UDim2.new(1,0,0,28); timerLabel.Position = UDim2.new(0,0,0.82,0)
+timerLabel.Size = UDim2.new(1,0,0,26); timerLabel.Position = UDim2.new(0,0,0.82,0)
 timerLabel.BackgroundTransparency = 1; timerLabel.Text = "3.00s"
 timerLabel.TextColor3 = Color3.fromRGB(150,150,150); timerLabel.TextScaled = true
 timerLabel.Font = Enum.Font.SourceSans; timerLabel.Parent = mainFrame
@@ -125,12 +119,11 @@ g.Parent = p:WaitForChild("PlayerGui")
 
 -- ==================== 彩色悬浮球 ====================
 local ball = Instance.new("TextButton")
-ball.Size = UDim2.new(0,96,0,72)
-ball.Position = UDim2.new(0.5,-48,0.5,-36)
+ball.Size = UDim2.new(0,96,0,72); ball.Position = UDim2.new(0.5,-48,0.5,-36)
 ball.BackgroundColor3 = Color3.fromRGB(255,255,255); ball.BackgroundTransparency = 0
 ball.Text = "WK脚本"; ball.TextColor3 = Color3.fromRGB(0,0,0)
 ball.TextScaled = true; ball.Font = Enum.Font.SourceSansBold; ball.Parent = g
-local gradient = Instance.new("UIGradient")
+local gradient = Instance.new("UIGradient"); gradient.Parent = ball
 gradient.Color = ColorSequence.new({
 	ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
 	ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255,255,0)),
@@ -138,7 +131,6 @@ gradient.Color = ColorSequence.new({
 	ColorSequenceKeypoint.new(0.75, Color3.fromRGB(0,0,255)),
 	ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,255)),
 })
-gradient.Parent = ball
 
 local drag = false; local dragStart, posStart
 ball.InputBegan:Connect(function(inp)
@@ -163,12 +155,10 @@ win.Position = isTouch and UDim2.new(0,0,0,0) or UDim2.new(0.5,-210,0.5,-260)
 win.BackgroundColor3 = Color3.fromRGB(30,30,30); win.BackgroundTransparency = 0.15
 win.BorderSizePixel = 0; win.Visible = false; win.Parent = g
 
--- ===== 跑马灯边框（主窗口） =====
--- 用四个彩色边条（上/下/左/右）+ 一个 Heartbeat 驱动的颜色循环实现流动效果
+-- ===== 跑马灯边框（主窗口 · 四边流动） =====
 local borderFrames = {}
 local function makeBorder(name, size, pos, z)
-	local f = Instance.new("Frame")
-	f.Name = name; f.Size = size; f.Position = pos; f.ZIndex = z or 2
+	local f = Instance.new("Frame"); f.Name = name; f.Size = size; f.Position = pos; f.ZIndex = z or 2
 	f.BackgroundColor3 = Color3.fromRGB(255,0,0); f.BorderSizePixel = 0; f.Parent = win
 	return f
 end
@@ -179,7 +169,6 @@ borderFrames.rig = makeBorder("BRig", UDim2.new(0,3,1,0), UDim2.new(1,-3,0,0))
 local marqueeHue = 0
 rs.Heartbeat:Connect(function(dt)
 	marqueeHue = (marqueeHue + dt*0.6) % 1
-	-- 四边按相位差形成"流动"效果
 	borderFrames.top.BackgroundColor3 = Color3.fromHSV(marqueeHue, 1, 1)
 	borderFrames.bot.BackgroundColor3 = Color3.fromHSV((marqueeHue+0.5)%1, 1, 1)
 	borderFrames.lef.BackgroundColor3 = Color3.fromHSV((marqueeHue+0.25)%1, 1, 1)
@@ -216,15 +205,13 @@ titleBar.InputEnded:Connect(function(inp)
 	if inp.UserInputType == Enum.UserInputType.Touch or inp.UserInputType == Enum.UserInputType.MouseButton1 then winDrag = false end
 end)
 
--- ==================== 导航栏（手机底部横排，PC 左侧竖排） ====================
+-- ==================== 导航栏 ====================
 local nav
 if isTouch then
-	nav = Instance.new("Frame")
-	nav.Size = UDim2.new(1,0,0,52); nav.Position = UDim2.new(0,0,1,-52)
+	nav = Instance.new("Frame"); nav.Size = UDim2.new(1,0,0,52); nav.Position = UDim2.new(0,0,1,-52)
 	nav.BackgroundColor3 = Color3.fromRGB(25,25,25); nav.BorderSizePixel = 0; nav.Parent = win
 else
-	nav = Instance.new("Frame")
-	nav.Size = UDim2.new(0,100,1,-44); nav.Position = UDim2.new(0,0,0,44)
+	nav = Instance.new("Frame"); nav.Size = UDim2.new(0,100,1,-44); nav.Position = UDim2.new(0,0,0,44)
 	nav.BackgroundColor3 = Color3.fromRGB(25,25,25); nav.BorderSizePixel = 0; nav.Parent = win
 end
 
@@ -233,11 +220,9 @@ local navBtns = {}
 local function createNavBtn(text, idx)
 	local btn = Instance.new("TextButton")
 	if isTouch then
-		btn.Size = UDim2.new(1/#navItems,0,1,0)
-		btn.Position = UDim2.new(idx/#navItems,0,0,0)
+		btn.Size = UDim2.new(1/#navItems,0,1,0); btn.Position = UDim2.new(idx/#navItems,0,0,0)
 	else
-		btn.Size = UDim2.new(1,0,0,44)
-		btn.Position = UDim2.new(0,0,0, idx*49+5)
+		btn.Size = UDim2.new(1,0,0,44); btn.Position = UDim2.new(0,0,0, idx*49+5)
 	end
 	btn.BackgroundColor3 = Color3.fromRGB(40,40,40); btn.Text = text
 	btn.TextColor3 = Color3.fromRGB(255,255,255); btn.TextScaled = true; btn.Font = Enum.Font.SourceSans; btn.Parent = nav
@@ -330,7 +315,6 @@ local function stopFly()
 	if flyBodyGyro then flyBodyGyro:Destroy() flyBodyGyro = nil end
 end
 
--- 飞行输入：键盘（PC）+ 摇杆（手机）
 local flyKeys = {W=false,A=false,S=false,D=false,Up=false,Down=false}
 u.InputBegan:Connect(function(inp)
 	if not flyEnabled then return end
@@ -360,18 +344,16 @@ end)
 local joyGui = Instance.new("ScreenGui"); joyGui.Name = "WkJoystick"; joyGui.ResetOnSpawn = false; joyGui.Parent = g
 joyGui.Enabled = false
 
--- 摇杆基座（左下）
 local stickBase = Instance.new("Frame"); stickBase.Name = "StickBase"
 stickBase.Size = UDim2.new(0,150,0,150); stickBase.Position = UDim2.new(0.02,0,1,-170)
 stickBase.BackgroundColor3 = Color3.fromRGB(40,40,40); stickBase.BackgroundTransparency = 0.4
 stickBase.BorderSizePixel = 0; stickBase.Parent = joyGui
-local stickCorner = Instance.new("UICorner"); stickCorner.CornerRadius = UDim.new(0.5,0); stickCorner.Parent = stickBase
+local stickCorner = Instance.new("UICorner"); stickCorner.CornerRadius = Ctr(0.5,0); stickCorner.Parent = stickBase
 local stickBtn = Instance.new("Frame"); stickBtn.Name = "Stick"
 stickBtn.Size = UDim2.new(0,60,0,60); stickBtn.Position = UDim2.new(0.5,-30,0.5,-30)
 stickBtn.BackgroundColor3 = Color3.fromRGB(0,120,255); stickBtn.BorderSizePixel = 0; stickBtn.Parent = stickBase
-local stickBtnCorner = Instance.new("UICorner"); stickBtnCorner.CornerRadius = UDim.new(0.5,0); stickBtnCorner.Parent = stickBtn
+local stickBtnCorner = Instance.new("UICorner"); stickBtnCorner.CornerRadius = Ctr(0.5,0); stickBtnCorner.Parent = stickBtn
 
--- 摇杆输入状态（-1~1）
 local joyX, joyY = 0, 0
 local stickDragging = false; local stickDragStart
 stickBase.InputBegan:Connect(function(inp)
@@ -382,7 +364,7 @@ end)
 u.InputChanged:Connect(function(inp)
 	if stickDragging and (inp.UserInputType == Enum.UserInputType.Touch or inp.UserInputType == Enum.UserInputType.MouseMovement) then
 		local delta = inp.Position - stickDragStart
-		local r = 45 -- 摇杆活动半径
+		local r = 45
 		local dx = math.max(-r, math.min(r, delta.X))
 		local dy = math.max(-r, math.min(r, delta.Y))
 		stickBtn.Position = UDim2.new(0.5, -30+dx, 0.5, -30+dy)
@@ -396,7 +378,6 @@ u.InputEnded:Connect(function(inp)
 	end
 end)
 
--- 右侧控制列：加速 / 减速 / 上升 / 下降 / 关闭盘
 local function mkJoyBtn(name, y, text, color)
 	local b = Instance.new("TextButton"); b.Name = name
 	b.Size = UDim2.new(0,80,0,44); b.Position = UDim2.new(1,-90,0,y)
@@ -417,24 +398,20 @@ btnFaster.MouseButton1Click:Connect(function() flySpeed = math.min(flySpeed+10, 
 btnSlower.MouseButton1Click:Connect(function() flySpeed = math.max(flySpeed-10, 10) end)
 btnClose.MouseButton1Click:Connect(function() joyGui.Enabled = false end)
 
--- 当前速度显示
 local speedDisp = Instance.new("TextLabel")
 speedDisp.Size = UDim2.new(0,80,0,28); speedDisp.Position = UDim2.new(1,-90,0,0.5,-218)
 speedDisp.BackgroundColor3 = Color3.fromRGB(60,60,60); speedDisp.TextColor3 = Color3.fromRGB(255,255,255)
 speedDisp.TextScaled = true; speedDisp.Font = Enum.Font.SourceSans; speedDisp.Text = "速度:"..flySpeed
 speedDisp.Parent = joyGui
 
--- 飞行 Heartbeat：键盘 + 摇杆合成
 rs.Heartbeat:Connect(function()
 	if flyEnabled and rp and flyBodyVel then
 		local cam = ws.CurrentCamera
 		local move = Vector3.new(0,0,0)
-		-- 键盘
 		if flyKeys.W then move = move + cam.CFrame.LookVector end
 		if flyKeys.S then move = move - cam.CFrame.LookVector end
 		if flyKeys.A then move = move - cam.CFrame.RightVector end
 		if flyKeys.D then move = move + cam.CFrame.RightVector end
-		-- 摇杆：joyX 右为正，joyY 前为正（UI 坐标需取反 Y）
 		if joyX ~= 0 or joyY ~= 0 then
 			move = move + cam.CFrame.RightVector * joyX + cam.CFrame.LookVector * (-joyY)
 		end
@@ -443,7 +420,6 @@ rs.Heartbeat:Connect(function()
 		if move.Magnitude > 0 then move = move.Unit end
 		flyBodyVel.Velocity = move * flySpeed
 		flyBodyGyro.CFrame = cam.CFrame
-		-- 刷新速度显示
 		if speedDisp and speedDisp.Parent then speedDisp.Text = "速度:"..flySpeed end
 	end
 end)
@@ -563,7 +539,6 @@ local function showFly()
 		flyBtn.BackgroundColor3 = flyEnabled and Color3.fromRGB(0,200,0) or Color3.fromRGB(200,50,50)
 	end)
 
-	-- 速度显示 + 加减（手机也可用按钮）
 	local spdLabel = Instance.new("TextLabel")
 	spdLabel.Size = UDim2.new(0,130,1,0); spdLabel.Position = UDim2.new(1,-135,0,0)
 	spdLabel.BackgroundColor3 = Color3.fromRGB(60,60,60); spdLabel.TextColor3 = Color3.fromRGB(255,255,255)
@@ -644,7 +619,9 @@ navBtns["飞行"].MouseButton1Click:Connect(showFly)
 navBtns["战斗"].MouseButton1Click:Connect(showCombat)
 navBtns["传送"].MouseButton1Click:Connect(showTele)
 
--- 默认显示通用页
+-- 默认显示通用页 + 加载完自动弹出主窗口（解决"功能消失"）
 showGeneral()
+win.Visible = true
+ball.Visible = false
 
-print("[wk 脚本 v2.9] 已加载（加载UI修复 + 跑马灯边框 + 虚拟摇杆飞行控制盘）。")
+print("[wk 脚本 v2.9.1] 已加载（加载UI居中修正 + 自动弹出主窗，全部功能可用）。")
