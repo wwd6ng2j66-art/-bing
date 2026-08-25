@@ -1,735 +1,478 @@
--- ============================================================
---  WK 控制菜单  (修复版: 窗口可拖拽 / 最小化 / 关闭)
--- ============================================================
+--[[
+	GlassWK — GlassNotice 玻璃拟态 UI + WK 全功能控制菜单
+	功能：通用(防传送/披风/最小化) | 飞行 | 战斗(双激光) | 传送(玩家列表)
+	用法：在 Executor 中直接执行本文件（不要包 loadstring）
+--]]
 
--- ---------- 服务 ----------
-local p      = game:GetService("Players").LocalPlayer
-local u      = game:GetService("UserInputService")
-local rs     = game:GetService("RunService")
-local debris = game:GetService("Debris")
-
--- ---------- 安全获取 GUI 父节点 ----------
-local function getGuiParent()
-    local ok, hui = pcall(function() return gethui() end)
-    if ok and hui then return hui end
-    -- 等待 PlayerGui
-    local pg = p:WaitForChild("PlayerGui", 10)
-    return pg
-end
-
-local guiParent = getGuiParent()
-
--- ---------- 主 ScreenGui ----------
-local g = Instance.new("ScreenGui")
-g.Name             = "WK_Menu"
-g.ResetOnSpawn    = false
-g.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
-g.Parent          = guiParent
-
--- ============================================================
---  浮动按钮 (左下角圆形按钮, 用于重新打开菜单)
--- ============================================================
-local floatBtn = Instance.new("TextButton")
-floatBtn.Name               = "FloatBtn"
-floatBtn.Size               = UDim2.new(0, 56, 0, 56)
-floatBtn.Position           = UDim2.new(0, 14, 1, -70)   -- 左下角
-floatBtn.BackgroundColor3   = Color3.fromRGB(40, 40, 40)
-floatBtn.BackgroundTransparency = 0.15
-floatBtn.Text               = "WK"
-floatBtn.TextColor3         = Color3.fromRGB(255, 255, 255)
-floatBtn.TextScaled         = true
-floatBtn.Font               = Enum.Font.SourceSansBold
-floatBtn.Visible            = false
-floatBtn.Parent             = g
-
--- 圆角
-local floatCorner = Instance.new("UICorner")
-floatCorner.CornerRadius = UDim.new(1, 0)
-floatCorner.Parent       = floatBtn
-
--- 彩虹渐变
-local floatGrad = Instance.new("UIGradient")
-floatGrad.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 0, 0)),
-    ColorSequenceKeypoint.new(0.25,Color3.fromRGB(255,255, 0)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 0)),
-    ColorSequenceKeypoint.new(0.75,Color3.fromRGB(0, 0, 255)),
-    ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 0, 255)),
+-- ==================== GlassNotice 模块 ====================
+local GlassNotice = {}
+GlassNotice.Defaults = {
+	Duration = 4,
+	TintColor = Color3.fromRGB(30, 30, 40),
 }
-floatGrad.Parent = floatBtn
 
-floatBtn.MouseButton1Click:Connect(function()
-    floatBtn.Visible = false
-    mainFrame.Visible = true
-end)
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
 
--- ============================================================
---  主菜单框架
--- ============================================================
-local mainFrame = Instance.new("Frame")
-mainFrame.Name              = "MainFrame"
-mainFrame.Size              = UDim2.new(0, 400, 0, 360)
-mainFrame.Position          = UDim2.new(0.5, -200, 0.5, -180)
-mainFrame.BackgroundColor3  = Color3.fromRGB(30, 30, 30)
-mainFrame.BackgroundTransparency = 0.12
-mainFrame.BorderSizePixel   = 0
-mainFrame.Parent            = g
+local isMobile = UserInputService.TouchEnabled
 
--- 圆角
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 8)
-mainCorner.Parent       = mainFrame
+-- 全局 Blur 管理
+local blur = Lighting:FindFirstChildOfClass("BlurEffect")
+if not blur then
+	blur = Instance.new("BlurEffect")
+	blur.Name = "GlassNoticeBlur"
+	blur.Parent = Lighting
+	blur.Size = 0
+end
+local activeBlurCount = 0
 
--- ---------- 标题栏 (可拖拽) ----------
-local titleBar = Instance.new("Frame")
-titleBar.Name             = "TitleBar"
-titleBar.Size             = UDim2.new(1, 0, 0, 36)
-titleBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-titleBar.BorderSizePixel  = 0
-titleBar.Parent           = mainFrame
-
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 8)
-titleCorner.Parent       = titleBar
-
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Size             = UDim2.new(0.6, 0, 1, 0)
-titleLabel.Position         = UDim2.new(0.02, 0, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text             = "WK 控制菜单"
-titleLabel.TextColor3       = Color3.fromRGB(255, 255, 255)
-titleLabel.TextXAlignment   = Enum.TextXAlignment.Left
-titleLabel.TextScaled       = true
-titleLabel.Font             = Enum.Font.SourceSansBold
-titleLabel.Parent           = titleBar
-
--- 最小化按钮
-local minBtn = Instance.new("TextButton")
-minBtn.Name             = "MinBtn"
-minBtn.Size             = UDim2.new(0, 34, 0, 34)
-minBtn.Position         = UDim2.new(1, -72, 0, 1)
-minBtn.BackgroundTransparency = 1
-minBtn.Text             = "_"
-minBtn.TextColor3       = Color3.fromRGB(200, 200, 200)
-minBtn.TextScaled       = true
-minBtn.Font             = Enum.Font.SourceSansBold
-minBtn.Parent           = titleBar
-
--- 关闭按钮
-local closeBtn = Instance.new("TextButton")
-closeBtn.Name             = "CloseBtn"
-closeBtn.Size             = UDim2.new(0, 34, 0, 34)
-closeBtn.Position         = UDim2.new(1, -38, 0, 1)
-closeBtn.BackgroundTransparency = 1
-closeBtn.Text             = "×"
-closeBtn.TextColor3       = Color3.fromRGB(255, 80, 80)
-closeBtn.TextScaled       = true
-closeBtn.Font             = Enum.Font.SourceSansBold
-closeBtn.Parent           = titleBar
-
--- ---------- 左侧导航栏 ----------
-local navBar = Instance.new("Frame")
-navBar.Name             = "NavBar"
-navBar.Size             = UDim2.new(0, 92, 1, -36)
-navBar.Position         = UDim2.new(0, 0, 0, 36)
-navBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-navBar.BorderSizePixel  = 0
-navBar.Parent           = mainFrame
-
-local navLayout = Instance.new("UIListLayout")
-navLayout.SortOrder      = Enum.SortOrder.LayoutOrder
-navLayout.Padding        = UDim.new(0, 4)
-navLayout.Parent         = navBar
-
-local navPad = Instance.new("UIPadding")
-navPad.PaddingTop    = UDim.new(0, 6)
-navPad.PaddingLeft   = UDim.new(0, 4)
-navPad.PaddingRight  = UDim.new(0, 4)
-navPad.Parent        = navBar
-
-local function createNavButton(text, order)
-    local btn = Instance.new("TextButton")
-    btn.Size             = UDim2.new(1, 0, 0, 34)
-    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    btn.Text             = text
-    btn.TextColor3       = Color3.fromRGB(255, 255, 255)
-    btn.TextScaled       = true
-    btn.Font             = Enum.Font.SourceSans
-    btn.LayoutOrder      = order
-    btn.Parent           = navBar
-
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, 6)
-    c.Parent       = btn
-    return btn
+local function enableGlobalBlur()
+	if activeBlurCount == 0 then
+		local target = isMobile and 4 or 8
+		TweenService:Create(blur, TweenInfo.new(0.35, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { Size = target }):Play()
+	end
+	activeBlurCount = activeBlurCount + 1
 end
 
-local navGeneral = createNavButton("通用", 1)
-local navFly     = createNavButton("飞行", 2)
-local navCombat  = createNavButton("战斗", 3)
-local navTele    = createNavButton("传送", 4)
-
--- ---------- 内容区域 ----------
-local contentFrame = Instance.new("Frame")
-contentFrame.Name             = "Content"
-contentFrame.Size             = UDim2.new(1, -96, 1, -42)
-contentFrame.Position         = UDim2.new(0, 94, 0, 38)
-contentFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-contentFrame.BorderSizePixel  = 0
-contentFrame.Parent           = mainFrame
-
-local contentCorner = Instance.new("UICorner")
-contentCorner.CornerRadius = UDim.new(0, 6)
-contentCorner.Parent       = contentFrame
-
-local contentPad = Instance.new("UIPadding")
-contentPad.PaddingTop    = UDim.new(0, 8)
-contentPad.PaddingLeft   = UDim.new(0, 8)
-contentPad.PaddingRight  = UDim.new(0, 8)
-contentPad.Parent        = contentFrame
-
--- ============================================================
---  工具函数
--- ============================================================
-local function clearContent()
-    for _, v in pairs(contentFrame:GetChildren()) do
-        if not v:IsA("UIPadding") and not v:IsA("UICorner") then
-            v:Destroy()
-        end
-    end
+local function disableGlobalBlur()
+	activeBlurCount = math.max(0, activeBlurCount - 1)
+	if activeBlurCount == 0 then
+		TweenService:Create(blur, TweenInfo.new(0.35, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { Size = 0 }):Play()
+	end
 end
 
--- 创建一行: 标签 + 按钮
-local function createRow(yOffset, labelText, btnRef)
-    local row = Instance.new("Frame")
-    row.Size             = UDim2.new(1, 0, 0, 36)
-    row.Position         = UDim2.new(0, 0, 0, yOffset)
-    row.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    row.BorderSizePixel  = 0
-    row.Parent           = contentFrame
+-- 玻璃拟态背景构造
+local function createBlurBackground(parent, tintColor)
+	local shadow = Instance.new("Frame")
+	shadow.Name = "GlassShadow"
+	shadow.Size = UDim2.new(1, 6, 1, 6)
+	shadow.Position = UDim2.new(0, -3, 0, -3)
+	shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	shadow.BackgroundTransparency = 0.92
+	shadow.BorderSizePixel = 0
+	shadow.ZIndex = 0
+	shadow.Parent = parent
+	local sc = Instance.new("UICorner"); sc.CornerRadius = UDim.new(0, 18); sc.Parent = shadow
 
-    local rowCorner = Instance.new("UICorner")
-    rowCorner.CornerRadius = UDim.new(0, 5)
-    rowCorner.Parent       = row
+	local blurFrame = Instance.new("Frame")
+	blurFrame.Name = "GlassFrame"
+	blurFrame.Size = UDim2.new(1, 0, 1, 0)
+	blurFrame.BackgroundColor3 = tintColor
+	blurFrame.BackgroundTransparency = 0.78
+	blurFrame.BorderSizePixel = 0
+	blurFrame.ZIndex = 1
+	blurFrame.Parent = parent
+	local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 16); c.Parent = blurFrame
 
-    local lbl = Instance.new("TextLabel")
-    lbl.Size             = UDim2.new(0.5, -6, 1, 0)
-    lbl.Position         = UDim2.new(0, 6, 0, 0)
-    lbl.BackgroundTransparency = 1
-    lbl.Text             = labelText
-    lbl.TextColor3       = Color3.fromRGB(220, 220, 220)
-    lbl.TextXAlignment   = Enum.TextXAlignment.Left
-    lbl.TextScaled       = true
-    lbl.Font             = Enum.Font.SourceSans
-    lbl.Parent           = row
+	local stroke = Instance.new("UIStroke")
+	stroke.Thickness = 1; stroke.Color = Color3.new(1, 1, 1); stroke.Transparency = 0.85
+	stroke.Parent = blurFrame
 
-    local btn = btnRef
-    btn.Size             = UDim2.new(0, 86, 1, -4)
-    btn.Position         = UDim2.new(1, -90, 0, 2)
-    btn.TextColor3       = Color3.fromRGB(255, 255, 255)
-    btn.TextScaled       = true
-    btn.Font             = Enum.Font.SourceSans
-    btn.Parent           = row
+	local gloss = Instance.new("Frame")
+	gloss.Name = "Gloss"
+	gloss.Size = UDim2.new(1, -8, 0, 10)
+	gloss.Position = UDim2.new(0, 4, 0, 6)
+	gloss.BackgroundColor3 = Color3.new(1, 1, 1)
+	gloss.BackgroundTransparency = 0.92
+	gloss.BorderSizePixel = 0; gloss.ZIndex = 2; gloss.Parent = parent
+	local gCorner = Instance.new("UICorner"); gCorner.CornerRadius = UDim.new(0, 10); gCorner.Parent = gloss
+	local gGrad = Instance.new("UIGradient")
+	gGrad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.new(1,1,1)),ColorSequenceKeypoint.new(1,Color3.new(1,1,1))})
+	gGrad.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,0.88),NumberSequenceKeypoint.new(1,1.0)})
+	gGrad.Rotation = 90; gGrad.Parent = gloss
 
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 5)
-    btnCorner.Parent       = btn
+	local overlay = Instance.new("Frame")
+	overlay.Name = "Overlay"
+	overlay.Size = UDim2.new(1, 0, 0.5, 0)
+	overlay.Position = UDim2.new(0, 0, 0, 0)
+	overlay.BackgroundColor3 = Color3.new(1, 1, 1)
+	overlay.BackgroundTransparency = 0.88
+	overlay.BorderSizePixel = 0; overlay.ZIndex = 2; overlay.Parent = parent
+	local oc = Instance.new("UICorner"); oc.CornerRadius = UDim.new(0, 16); oc.Parent = overlay
 
-    return btn
+	return blurFrame
 end
 
--- ============================================================
---  状态变量
--- ============================================================
-local flying    = false
-local hSpd      = 50
-local vSpd      = 30
-local anti      = false
-local cape      = nil
-local capW      = nil
-local laser     = false
-local lpL, lpR  = nil, nil
-local rp        = nil
-local h         = nil
-
--- ============================================================
---  角色初始化
--- ============================================================
-local function initChar()
-    local char = p.Character or p.CharacterAdded:Wait()
-    repeat task.wait() until char:FindFirstChild("HumanoidRootPart")
-    rp = char:FindFirstChild("HumanoidRootPart")
-    h  = char:FindFirstChild("Humanoid")
-end
-spawn(initChar)
-p.CharacterAdded:Connect(function()
-    task.wait(0.5)
-    initChar()
-end)
-
--- ============================================================
---  披风功能
--- ============================================================
-local function togCape(enable)
-    if not rp then return end
-    local char = p.Character
-    if not char then return end
-
-    if enable and not cape then
-        local tr = char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
-        if not tr then return end
-
-        cape = Instance.new("Part")
-        cape.Name            = "WK_Cape"
-        cape.Size            = Vector3.new(5, 4, 0.2)
-        cape.Anchored        = false
-        cape.CanCollide      = false
-        cape.Material        = Enum.Material.SmoothPlastic
-        cape.Color           = Color3.fromRGB(200, 20, 20)
-        cape.Transparency    = 0.2
-        cape.Parent          = char
-
-        local st = Instance.new("Part")
-        st.Name            = "WK_CapeSpine"
-        st.Size            = Vector3.new(0.3, 3.8, 0.25)
-        st.Anchored        = false
-        st.CanCollide      = false
-        st.Material        = Enum.Material.SmoothPlastic
-        st.Color           = Color3.fromRGB(255, 215, 0)
-        st.Transparency    = 0.2
-        st.Parent          = cape
-
-        capW = Instance.new("Weld")
-        capW.Name   = "WK_CapeWeld"
-        capW.Part0  = tr
-        capW.Part1  = cape
-        capW.C0     = CFrame.new(0, 0.5, -1.5)
-        capW.Parent = tr
-
-        local sw = Instance.new("Weld")
-        sw.Part0  = cape
-        sw.Part1  = st
-        sw.C0     = CFrame.new(0, 0, -0.1)
-        sw.Parent = cape
-
-    elseif not enable and cape then
-        cape:Destroy()
-        cape = nil
-        capW = nil
-    end
+-- 获取/创建 ScreenGui 容器
+local function getScreenGui()
+	local player = Players.LocalPlayer
+	local pgui = player:WaitForChild("PlayerGui")
+	local gui = pgui:FindFirstChild("GlassNoticeGui")
+	if not gui then
+		gui = Instance.new("ScreenGui")
+		gui.Name = "GlassNoticeGui"
+		gui.ResetOnSpawn = false
+		gui.IgnoreGuiInset = true
+		gui.DisplayOrder = 10
+		gui.Parent = pgui
+	end
+	return gui
 end
 
--- ============================================================
---  激光功能
--- ============================================================
-local function createLaserPart()
-    local part = Instance.new("Part")
-    part.Name            = "WK_Laser"
-    part.Size            = Vector3.new(1.5, 1.5, 0.2)
-    part.Anchored        = true
-    part.CanCollide      = false
-    part.Material        = Enum.Material.Neon
-    part.Color           = Color3.fromRGB(255, 0, 0)
-    part.Transparency    = 0.2
-    part.Parent          = workspace
-    return part
+-- 创建玻璃通知面板（用作 WK 菜单容器）
+function GlassNotice.createNotice(config)
+	config = config or {}
+	local titleText = config.Title or "通知"
+	local descText = config.Description or ""
+	local duration = config.Duration or GlassNotice.Defaults.Duration
+	local tint = config.TintColor or GlassNotice.Defaults.TintColor
+	local onComplete = config.OnComplete
+
+	local screenGui = getScreenGui()
+
+	local card = Instance.new("Frame")
+	card.Name = "NoticeCard"
+	card.Size = config.Size or UDim2.new(0, 400, 0, 420)
+	card.Position = UDim2.new(0.5, -200, 0.5, -210)
+	card.BackgroundTransparency = 1
+	card.BorderSizePixel = 0
+	card.ClipsDescendants = true
+	card.Parent = screenGui
+
+	createBlurBackground(card, tint)
+
+	-- 标题栏（拖拽区）
+	local tb = Instance.new("Frame")
+	tb.Name = "TitleBar"
+	tb.Size = UDim2.new(1, 0, 0, 36)
+	tb.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+	tb.BackgroundTransparency = 0.6
+	tb.Parent = card
+	local tbC = Instance.new("UICorner"); tbC.CornerRadius = UDim.new(0, 16); tbC.Parent = tb
+	local tbF = Instance.new("Frame"); tbF.Size = UDim2.new(1,0,0.5,0); tbF.Position = UDim2.new(0,0,0.5,0); tbF.BackgroundTransparency=1; tbF.Parent=tb
+
+	local tl = Instance.new("TextLabel")
+	tl.Size = UDim2.new(0.8, 0, 1, 0)
+	tl.Position = UDim2.new(0.02, 0, 0, 0)
+	tl.BackgroundTransparency = 1
+	tl.Text = titleText
+	tl.TextColor3 = Color3.fromRGB(255, 255, 255)
+	tl.TextXAlignment = Enum.TextXAlignment.Left
+	tl.TextScaled = true; tl.Font = Enum.Font.GothamBold; tl.Parent = tb
+
+	local cl = Instance.new("TextButton")
+	cl.Size = UDim2.new(0, 32, 0, 32)
+	cl.Position = UDim2.new(1, -36, 0, 2)
+	cl.BackgroundTransparency = 1
+	cl.Text = "×"; cl.TextColor3 = Color3.fromRGB(255, 90, 90)
+	cl.TextScaled = true; cl.Font = Enum.Font.Gotham; cl.Parent = tb
+
+	-- 描述
+	if descText ~= "" then
+		local d = Instance.new("TextLabel")
+		d.Size = UDim2.new(1, -16, 0, 18)
+		d.Position = UDim2.new(0, 8, 0, 38)
+		d.BackgroundTransparency = 1
+		d.Text = descText
+		d.TextColor3 = Color3.fromRGB(220, 220, 225)
+		d.TextXAlignment = Enum.TextXAlignment.Left
+		d.TextScaled = true; d.Font = Enum.Font.Gotham; d.Parent = card
+	end
+
+	enableGlobalBlur()
+
+	-- 入场动画
+	card.Position = UDim2.new(0.5, -200, 0.5, -260)
+	TweenService:Create(card, TweenInfo.new(0.4, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { Position = UDim2.new(0.5, -200, 0.5, -210) }):Play()
+
+	local dismissed = false
+	local function dismiss()
+		if dismissed then return end
+		dismissed = true
+		TweenService:Create(card, TweenInfo.new(0.35, Enum.EasingStyle.Sine, Enum.EasingDirection.In), { Position = UDim2.new(0.5, -200, 0.5, -260) }):Play()
+		task.delay(0.4, function()
+			disableGlobalBlur()
+			card:Destroy()
+			if onComplete then task.spawn(onComplete) end
+		end)
+	end
+
+	if duration < math.huge then task.delay(duration, dismiss) end
+	cl.MouseButton1Click:Connect(dismiss)
+
+	-- 拖拽（绑定标题栏）
+	local drag = false; local ds, sp
+	tb.InputBegan:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
+			drag = true; ds = i.Position; sp = card.Position
+		end
+	end)
+	tb.InputChanged:Connect(function(i)
+		if drag and i.UserInputType == Enum.UserInputType.Touch then
+			local dt = i.Position - ds
+			card.Position = UDim2.new(sp.X.Scale, sp.X.Offset + dt.X, sp.Y.Scale, sp.Y.Offset + dt.Y)
+		end
+	end)
+	tb.InputEnded:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end
+	end)
+
+	return { Card = card, Dismiss = dismiss, TitleBar = tb, CloseButton = cl }
 end
 
-local function rebuildLasers()
-    if lpL then lpL:Destroy() lpL = nil end
-    if lpR then lpR:Destroy() lpR = nil end
-    lpL = createLaserPart()
-    lpR = createLaserPart()
+-- ==================== WK 控制菜单（全部功能） ====================
+local p = Players.LocalPlayer
+local rs = game:GetService("RunService")
+local u = UserInputService
+
+-- 状态
+local flying = false
+local hSpd = 50; local vSpd = 30
+local rp, h = nil, nil
+local anti = false
+local laser = false
+local cape = nil
+local lpL, lpR = nil, nil
+
+-- 初始化角色
+local function init()
+	repeat task.wait() until p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+	rp = p.Character.HumanoidRootPart
+	h = p.Character:FindFirstChild("Humanoid")
 end
-rebuildLasers()
+spawn(init)
 
--- 更新激光外观
-local function updateLaserBeam(laserPart, origin, direction, distance)
-    if not laserPart then return end
-    if distance < 0.1 then
-        laserPart.Size     = Vector3.new(0.1, 0.1, 0.1)
-        laserPart.CFrame   = CFrame.new(origin)
-        return
-    end
-    local endPoint = origin + direction * distance
-    laserPart.Size   = Vector3.new(1.5, 1.5, distance)
-    laserPart.CFrame = CFrame.lookAt((origin + endPoint) / 2, endPoint)
+-- 披风
+local function togCape(e)
+	if not rp then return end
+	if e and not cape then
+		local tr = p.Character:FindFirstChild("Torso")
+		if not tr then return end
+		cape = Instance.new("Part"); cape.Name = "WKCape"
+		cape.Size = Vector3.new(5, 4, 0.2); cape.Anchored = false; cape.CanCollide = false
+		cape.Material = Enum.Material.SmoothPlastic; cape.Color = Color3.fromRGB(200, 20, 20); cape.Transparency = 0.2
+		cape.Parent = p.Character
+		local st = Instance.new("Part"); st.Size = Vector3.new(0.3, 3.8, 0.25); st.Anchored = false; st.CanCollide = false
+		st.Material = Enum.Material.SmoothPlastic; st.Color = Color3.fromRGB(255, 215, 0); st.Transparency = 0.2; st.Parent = cape
+		local capW = Instance.new("Weld"); capW.Part0 = tr; capW.Part1 = cape; capW.C0 = CFrame.new(0, 0.5, -1.5); capW.Parent = tr
+		local sw = Instance.new("Weld"); sw.Part0 = cape; sw.Part1 = st; sw.C0 = CFrame.new(0, 0, -0.1); sw.Parent = cape
+	elseif not e and cape then cape:Destroy(); cape = nil end
 end
 
--- 伤害飘字
-local function spawnDamageNumber(pos, amount)
-    local bg = Instance.new("BillboardGui")
-    bg.Size         = UDim2.new(0, 80, 0, 40)
-    bg.AlwaysOnTop  = true
-    bg.Parent       = workspace
+-- 激光部件
+local function crLaser()
+	if lpL then lpL:Destroy() end; if lpR then lpR:Destroy() end
+	local function mk()
+		local pa = Instance.new("Part"); pa.Size = Vector3.new(1.5, 1.5, 0.2); pa.Anchored = true; pa.CanCollide = false
+		pa.Material = Enum.Material.Neon; pa.Color = Color3.fromRGB(255, 0, 0); pa.Transparency = 0.2; pa.Parent = workspace; return pa
+	end
+	lpL = mk(); lpR = mk()
+end
+crLaser()
 
-    local fr = Instance.new("Frame")
-    fr.Size                 = UDim2.new(1, 0, 1, 0)
-    fr.BackgroundTransparency = 1
-    fr.Parent               = bg
+local function ub(part, o, d, dist)
+	if not part then return end
+	if dist < 0.1 then part.Size = Vector3.new(0.1,0.1,0.1); part.CFrame = CFrame.new(o); return end
+	local e = o + d * dist; part.Size = Vector3.new(1.5, 1.5, dist); part.CFrame = CFrame.lookAt((o + e) / 2, e)
+end
 
-    local lbl = Instance.new("TextLabel")
-    lbl.Size             = UDim2.new(1, 0, 1, 0)
-    lbl.BackgroundTransparency = 1
-    lbl.Text             = "-" .. tostring(amount)
-    lbl.TextColor3       = Color3.fromRGB(255, 0, 0)
-    lbl.TextScaled       = true
-    lbl.Font             = Enum.Font.GothamBlack
-    lbl.Parent           = fr
-
-    local att = Instance.new("Attachment")
-    att.Parent   = workspace
-    att.Position = pos
-    bg.Parent   = att
-
-    debris:AddItem(bg, 0.8)
-    debris:AddItem(att, 0.8)
+local function sdn(pos, amt)
+	local bg = Instance.new("BillboardGui"); bg.Size = UDim2.new(0, 80, 0, 40); bg.AlwaysOnTop = true; bg.Parent = workspace
+	local fr = Instance.new("Frame"); fr.Size = UDim2.new(1,0,1,0); fr.BackgroundTransparency = 1; fr.Parent = bg
+	local lbl = Instance.new("TextLabel"); lbl.Size = UDim2.new(1,0,1,0); lbl.BackgroundTransparency = 1; lbl.Text = "-" .. tostring(amt)
+	lbl.TextColor3 = Color3.fromRGB(255, 0, 0); lbl.TextScaled = true; lbl.Font = Enum.Font.GothamBlack; lbl.Parent = fr
+	local att = Instance.new("Attachment"); att.Parent = workspace; att.Position = pos; bg.Parent = att
+	game:GetService("Debris"):AddItem(bg, 0.8); game:GetService("Debris"):AddItem(att, 0.8)
 end
 
 -- 发射激光
 local function fireLasers()
-    if not rp or not p.Character then return end
-    local cam   = workspace.CurrentCamera
-    local dir   = cam.CFrame.LookVector
-    local oL    = rp.Position + Vector3.new(-0.6, 1.5, 0)
-    local oR    = rp.Position + Vector3.new( 0.6, 1.5, 0)
-    local maxD  = 800
+	if not rp or not p.Character then return end
+	local cam = workspace.CurrentCamera; local dir = cam.CFrame.LookVector
+	local oL = rp.Position + Vector3.new(-0.6, 1.5, 0); local oR = rp.Position + Vector3.new(0.6, 1.5, 0)
+	local maxD = 800
+	local params = RaycastParams.new(); params.FilterType = Enum.RaycastFilterType.Blacklist; params.FilterDescendantsInstances = {p.Character}
 
-    local params = RaycastParams.new()
-    params.FilterType             = Enum.RaycastFilterType.Blacklist
-    params.FilterDescendantsInstances = {p.Character}
+	local function hitFx(pos)
+		local fx = Instance.new("Part"); fx.Size = Vector3.new(5,5,5); fx.Anchored = true; fx.CanCollide = false; fx.Material = Enum.Material.Neon
+		fx.Color = Color3.fromRGB(255,255,200); fx.Transparency = 0.5; fx.Position = pos; fx.Parent = workspace
+		game:GetService("Debris"):AddItem(fx, 0.4)
+		for i = 1, 10 do local p2 = Instance.new("Part"); p2.Size = Vector3.new(1,1,1); p2.Anchored = true; p2.CanCollide = false
+			p2.Material = Enum.Material.Neon; p2.Color = Color3.fromRGB(255,200,100); p2.Transparency = 0.8
+			p2.Position = pos + Vector3.new(math.random(-5,5), math.random(-5,5), math.random(-5,5)); p2.Parent = workspace
+			game:GetService("Debris"):AddItem(p2, 0.5)
+		end
+		local exp = Instance.new("Explosion"); exp.Position = pos; exp.BlastRadius = 4; exp.ExplosionType = Enum.ExplosionType.NoCraters; exp.Parent = workspace
+		game:GetService("Debris"):AddItem(exp, 0.3)
+	end
 
-    local function processHit(origin, result, dist)
-        if not result then return end
-        local hit   = result.Instance
-        local model = hit:FindFirstAncestorOfClass("Model")
-        if not model then return end
-        local targetHum  = model:FindFirstChild("Humanoid")
-        local targetRoot = model:FindFirstChild("HumanoidRootPart")
-        if not targetHum or not targetRoot then return end
+	local function procHit(o, r)
+		if not r then return 800 end
+		local d = (o - r.Position).Magnitude
+		local model = r.Instance and r.Instance:FindFirstAncestorOfClass("Model")
+		if model and model:FindFirstChild("Humanoid") then
+			local root = model:FindFirstChild("HumanoidRootPart"); local hum = model:FindFirstChild("Humanoid")
+			if root and hum then
+				local force = (root.Position - rp.Position).Unit * 200 + Vector3.new(0, 120, 0)
+				root.Velocity = force; root.AssemblyLinearVelocity = force; hum:TakeDamage(30); sdn(r.Position, 30); hitFx(r.Position)
+			end
+		end
+		return d
+	end
 
-        local force = (targetRoot.Position - rp.Position).Unit * 200 + Vector3.new(0, 120, 0)
-        targetRoot.Velocity           = force
-        targetRoot.AssemblyLinearVelocity = force
-        targetHum:TakeDamage(30)
-        spawnDamageNumber(result.Position, 30)
-
-        -- 命中特效
-        local fx = Instance.new("Part")
-        fx.Size            = Vector3.new(5, 5, 5)
-        fx.Anchored        = true
-        fx.CanCollide      = false
-        fx.Material        = Enum.Material.Neon
-        fx.Color           = Color3.fromRGB(255, 255, 200)
-        fx.Transparency    = 0.5
-        fx.Position        = result.Position
-        fx.Parent          = workspace
-        debris:AddItem(fx, 0.4)
-
-        for i = 1, 10 do
-            local p2 = Instance.new("Part")
-            p2.Size            = Vector3.new(1, 1, 1)
-            p2.Anchored        = true
-            p2.CanCollide      = false
-            p2.Material        = Enum.Material.Neon
-            p2.Color           = Color3.fromRGB(255, 200, 100)
-            p2.Transparency    = 0.8
-            p2.Position        = result.Position + Vector3.new(math.random(-5,5), math.random(-5,5), math.random(-5,5))
-            p2.Parent          = workspace
-            debris:AddItem(p2, 0.5)
-        end
-
-        local exp = Instance.new("Explosion")
-        exp.Position        = result.Position
-        exp.BlastRadius     = 4
-        exp.ExplosionType   = Enum.ExplosionType.NoCraters
-        exp.Parent          = workspace
-        debris:AddItem(exp, 0.3)
-    end
-
-    local rL = workspace:Raycast(oL, dir * maxD, params)
-    local dL = rL and (oL - rL.Position).Magnitude or maxD
-    processHit(oL, rL, dL)
-
-    local rR = workspace:Raycast(oR, dir * maxD, params)
-    local dR = rR and (oR - rR.Position).Magnitude or maxD
-    processHit(oR, rR, dR)
-
-    updateLaserBeam(lpL, oL, dir, dL)
-    updateLaserBeam(lpR, oR, dir, dR)
+	local dL = procHit(oL, workspace:Raycast(oL, dir * maxD, params))
+	local dR = procHit(oR, workspace:Raycast(oR, dir * maxD, params))
+	ub(lpL, oL, dir, dL); ub(lpR, oR, dir, dR)
 end
 
--- ============================================================
---  页面: 通用
--- ============================================================
-local function showGeneral()
-    clearContent()
+-- ==================== 构建玻璃菜单 UI ====================
+local notice = GlassNotice.createNotice({
+	Title = "WK 控制面板",
+	Description = "拖拽标题栏移动 · 点击 × 关闭",
+	Duration = math.huge,
+	TintColor = Color3.fromRGB(28, 28, 38),
+	Size = UDim2.new(0, 400, 0, 420),
+})
 
-    -- 最小化按钮行
-    local minRowBtn = Instance.new("TextButton")
-    minRowBtn.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-    minRowBtn.Text             = "最小化到悬浮按钮"
-    minRowBtn.Parent           = contentFrame
-    createRow(0,  "窗口", minRowBtn)
-    minRowBtn.MouseButton1Click:Connect(function()
-        mainFrame.Visible = false
-        floatBtn.Visible  = true
-    end)
+local card = notice.Card
 
-    -- 防传送
-    local antiBtn = Instance.new("TextButton")
-    antiBtn.BackgroundColor3 = anti and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 50, 50)
-    antiBtn.Text             = anti and "防传送 (开)" or "防传送 (关)"
-    antiBtn.Parent           = contentFrame
-    createRow(42, "防传送", antiBtn)
-    antiBtn.MouseButton1Click:Connect(function()
-        anti = not anti
-        antiBtn.Text             = anti and "防传送 (开)" or "防传送 (关)"
-        antiBtn.BackgroundColor3 = anti and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 50, 50)
-    end)
+-- 内容区
+local content = Instance.new("Frame")
+content.Name = "Content"
+content.Size = UDim2.new(1, -16, 1, -60)
+content.Position = UDim2.new(0, 8, 0, 56)
+content.BackgroundTransparency = 1
+content.Parent = card
 
-    -- 披风
-    local capeBtn = Instance.new("TextButton")
-    capeBtn.BackgroundColor3 = cape and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 50, 50)
-    capeBtn.Text             = cape and "披风 (开)" or "披风 (关)"
-    capeBtn.Parent           = contentFrame
-    createRow(84, "披风", capeBtn)
-    capeBtn.MouseButton1Click:Connect(function()
-        togCape(not cape)
-        capeBtn.Text             = cape and "披风 (开)" or "披风 (关)"
-        capeBtn.BackgroundColor3 = cape and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 50, 50)
-    end)
+-- 左侧导航
+local nv = Instance.new("Frame")
+nv.Size = UDim2.new(0, 90, 1, 0)
+nv.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+nv.BackgroundTransparency = 0.5
+nv.Parent = content
+local nvC = Instance.new("UICorner"); nvC.CornerRadius = UDim.new(0, 12); nvC.Parent = nv
+
+local function navBtn(t, y)
+	local x = Instance.new("TextButton"); x.Size = UDim2.new(1, 0, 0, 34); x.Position = UDim2.new(0, 0, 0, y)
+	x.BackgroundColor3 = Color3.fromRGB(40, 40, 48); x.Text = t; x.TextColor3 = Color3.fromRGB(255, 255, 255)
+	x.TextScaled = true; x.Font = Enum.Font.Gotham; x.Parent = nv; return x
+end
+local bG = navBtn("通用", 6)
+local bF = navBtn("飞行", 44)
+local bC = navBtn("战斗", 82)
+local bT = navBtn("传送", 120)
+
+-- 右侧面板
+local ct = Instance.new("Frame")
+ct.Size = UDim2.new(1, -96, 1, 0)
+ct.Position = UDim2.new(0, 94, 0, 0)
+ct.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+ct.BackgroundTransparency = 0.5
+ct.Parent = content
+local ctC = Instance.new("UICorner"); ctC.CornerRadius = UDim.new(0, 12); ctC.Parent = ct
+
+local function clr() for _, v in pairs(ct:GetChildren()) do if v ~= ctC then v:Destroy() end end end
+
+local function rw(y, l, btn)
+	local fr = Instance.new("Frame"); fr.Size = UDim2.new(1, -10, 0, 34); fr.Position = UDim2.new(0.02, 0, 0, y)
+	fr.BackgroundColor3 = Color3.fromRGB(45, 45, 54); fr.Parent = ct; local frc = Instance.new("UICorner"); frc.CornerRadius = UDim.new(0,8); frc.Parent = fr
+	local lb = Instance.new("TextLabel"); lb.Size = UDim2.new(0.5, 0, 1, 0); lb.Position = UDim2.new(0.02, 0, 0, 0)
+	lb.BackgroundTransparency = 1; lb.Text = l; lb.TextColor3 = Color3.fromRGB(220, 220, 225)
+	lb.TextXAlignment = Enum.TextXAlignment.Left; lb.TextScaled = true; lb.Font = Enum.Font.Gotham; lb.Parent = fr
+	btn.Parent = fr; btn.Size = UDim2.new(0, 78, 1, 0); btn.Position = UDim2.new(1, -86, 0, 0)
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255); btn.TextScaled = true; btn.Font = Enum.Font.Gotham; return btn
 end
 
--- ============================================================
---  页面: 飞行
--- ============================================================
-local function showFly()
-    clearContent()
+-- 通用页
+local function gen()
+	clr()
+	local a = Instance.new("TextButton"); a.BackgroundColor3 = anti and Color3.fromRGB(0,200,0) or Color3.fromRGB(200,50,50)
+	a.Text = anti and "防传送 (开)" or "防传送 (关)"; a.TextColor3 = Color3.fromRGB(255,255,255); a.TextScaled = true; a.Font = Enum.Font.Gotham
+	rw(6, "防传送", a)
+	a.MouseButton1Click:Connect(function() anti = not anti; a.Text = anti and "防传送 (开)" or "防传送 (关)"; a.BackgroundColor3 = anti and Color3.fromRGB(0,200,0) or Color3.fromRGB(200,50,50) end)
 
-    local flyBtn = Instance.new("TextButton")
-    flyBtn.BackgroundColor3 = flying and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 50, 50)
-    flyBtn.Text             = flying and "飞行 (开)" or "飞行 (关)"
-    flyBtn.Parent           = contentFrame
-    createRow(0, "飞行开关", flyBtn)
-    flyBtn.MouseButton1Click:Connect(function()
-        flying = not flying
-        flyBtn.Text             = flying and "飞行 (开)" or "飞行 (关)"
-        flyBtn.BackgroundColor3 = flying and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 50, 50)
-    end)
+	local c = Instance.new("TextButton"); c.BackgroundColor3 = cape and Color3.fromRGB(0,200,0) or Color3.fromRGB(200,50,50)
+	c.Text = cape and "披风 (开)" or "披风 (关)"; c.TextColor3 = Color3.fromRGB(255,255,255); c.TextScaled = true; c.Font = Enum.Font.Gotham
+	rw(44, "披风", c)
+	c.MouseButton1Click:Connect(function() togCape(not cape); c.Text = cape and "披风 (开)" or "披风 (关)"; c.BackgroundColor3 = cape and Color3.fromRGB(0,200,0) or Color3.fromRGB(200,50,50) end)
 
-    -- 速度提示
-    local speedLabel = Instance.new("TextLabel")
-    speedLabel.Size             = UDim2.new(1, 0, 0, 28)
-    speedLabel.Position         = UDim2.new(0, 0, 0, 88)
-    speedLabel.BackgroundTransparency = 1
-    speedLabel.Text             = "WASD 移动 | 空格上升 | Shift 下降"
-    speedLabel.TextColor3       = Color3.fromRGB(180, 180, 180)
-    speedLabel.TextScaled       = true
-    speedLabel.Font             = Enum.Font.SourceSans
-    speedLabel.Parent           = contentFrame
+	local min = Instance.new("TextButton"); min.BackgroundColor3 = Color3.fromRGB(200,200,200); min.Text = "最小化"; min.TextColor3 = Color3.fromRGB(0,0,0); min.TextScaled = true; min.Font = Enum.Font.Gotham
+	rw(82, "窗口", min)
+	min.MouseButton1Click:Connect(function() notice.Dismiss() end)
 end
 
--- ============================================================
---  页面: 战斗
--- ============================================================
-local function showCombat()
-    clearContent()
-
-    local laserBtn = Instance.new("TextButton")
-    laserBtn.BackgroundColor3 = laser and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 50, 50)
-    laserBtn.Text             = laser and "双激光 (开)" or "双激光 (关)"
-    laserBtn.Parent           = contentFrame
-    createRow(0, "双激光", laserBtn)
-    laserBtn.MouseButton1Click:Connect(function()
-        laser = not laser
-        laserBtn.Text             = laser and "双激光 (开)" or "双激光 (关)"
-        laserBtn.BackgroundColor3 = laser and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 50, 50)
-        if not laser then
-            rebuildLasers()
-        end
-    end)
-
-    local hint = Instance.new("TextLabel")
-    hint.Size             = UDim2.new(1, 0, 0, 28)
-    hint.Position         = UDim2.new(0, 0, 0, 88)
-    hint.BackgroundTransparency = 1
-    hint.Text             = "激光从双肩发射, 对准视角方向"
-    hint.TextColor3       = Color3.fromRGB(180, 180, 180)
-    hint.TextScaled       = true
-    hint.Font             = Enum.Font.SourceSans
-    hint.Parent           = contentFrame
-end
-
--- ============================================================
---  页面: 传送
--- ============================================================
-local function showTeleport()
-    clearContent()
-
-    local hint = Instance.new("TextLabel")
-    hint.Size             = UDim2.new(1, 0, 0, 30)
-    hint.Position         = UDim2.new(0, 0, 0, 0)
-    hint.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    hint.Text             = "传送功能 - 点击玩家名传送到其身边"
-    hint.TextColor3       = Color3.fromRGB(255, 255, 255)
-    hint.TextScaled       = true
-    hint.Font             = Enum.Font.SourceSans
-    hint.Parent           = contentFrame
-
-    local hintCorner = Instance.new("UICorner")
-    hintCorner.CornerRadius = UDim.new(0, 5)
-    hintCorner.Parent       = hint
-
-    -- 玩家列表
-    local playerList = Instance.new("ScrollingFrame")
-    playerList.Size             = UDim2.new(1, 0, 1, -38)
-    playerList.Position         = UDim2.new(0, 0, 0, 34)
-    playerList.BackgroundTransparency = 1
-    playerList.BorderSizePixel  = 0
-    playerList.ScrollBarThickness = 6
-    playerList.Parent           = contentFrame
-
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.SortOrder = Enum.SortOrder.Name
-    listLayout.Padding   = UDim.new(0, 3)
-    listLayout.Parent    = playerList
-
-    local function refreshPlayerList()
-        for _, child in pairs(playerList:GetChildren()) do
-            if not child:IsA("UIListLayout") then child:Destroy() end
-        end
-        local y = 0
-        for _, plr in pairs(game:GetService("Players"):GetPlayers()) do
-            if plr ~= p then
-                local pb = Instance.new("TextButton")
-                pb.Size             = UDim2.new(1, -4, 0, 30)
-                pb.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-                pb.Text             = plr.Name
-                pb.TextColor3       = Color3.fromRGB(255, 255, 255)
-                pb.TextScaled       = true
-                pb.Font             = Enum.Font.SourceSans
-                pb.Parent           = playerList
-
-                local pbc = Instance.new("UICorner")
-                pbc.CornerRadius = UDim.new(0, 4)
-                pbc.Parent       = pb
-
-                pb.MouseButton1Click:Connect(function()
-                    if rp and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                        rp.CFrame = plr.Character.HumanoidRootPart.CFrame * CFrame.new(0, 3, 0)
-                    end
-                end)
-            end
-        end
-    end
-
-    refreshPlayerList()
-    -- 每 3 秒刷新一次玩家列表
-    task.spawn(function()
-        while contentFrame.Visible and mainFrame.Visible do
-            task.wait(3)
-            if navTele == nil then break end
-            refreshPlayerList()
-        end
-    end)
-end
-
--- ============================================================
---  导航按钮绑定
--- ============================================================
-navGeneral.MouseButton1Click:Connect(showGeneral)
-navFly.MouseButton1Click:Connect(showFly)
-navCombat.MouseButton1Click:Connect(showCombat)
-navTele.MouseButton1Click:Connect(showTeleport)
-
--- ============================================================
---  关闭 / 最小化 按钮
--- ============================================================
-closeBtn.MouseButton1Click:Connect(function()
-    mainFrame.Visible = false
-    floatBtn.Visible  = true
+-- 飞行页
+bF.MouseButton1Click:Connect(function()
+	clr()
+	local f = Instance.new("TextButton"); f.BackgroundColor3 = flying and Color3.fromRGB(0,200,0) or Color3.fromRGB(200,50,50)
+	f.Text = flying and "飞行 (开)" or "飞行 (关)"; f.TextColor3 = Color3.fromRGB(255,255,255); f.TextScaled = true; f.Font = Enum.Font.Gotham
+	rw(6, "飞行开关", f)
+	f.MouseButton1Click:Connect(function() flying = not flying; f.Text = flying and "飞行 (开)" or "飞行 (关)"; f.BackgroundColor3 = flying and Color3.fromRGB(0,200,0) or Color3.fromRGB(200,50,50) end)
 end)
 
-minBtn.MouseButton1Click:Connect(function()
-    mainFrame.Visible = false
-    floatBtn.Visible  = true
+-- 战斗页
+bC.MouseButton1Click:Connect(function()
+	clr()
+	local l = Instance.new("TextButton"); l.BackgroundColor3 = laser and Color3.fromRGB(0,200,0) or Color3.fromRGB(200,50,50)
+	l.Text = laser and "激光 (开)" or "激光 (关)"; l.TextColor3 = Color3.fromRGB(255,255,255); l.TextScaled = true; l.Font = Enum.Font.Gotham
+	rw(6, "双激光", l)
+	l.MouseButton1Click:Connect(function() laser = not laser; l.Text = laser and "激光 (开)" or "激光 (关)"; l.BackgroundColor3 = laser and Color3.fromRGB(0,200,0) or Color3.fromRGB(200,50,50) end)
 end)
 
--- ============================================================
---  窗口拖拽 (鼠标 + 触摸)
--- ============================================================
-local dragging = false
-local dragStartPos
-local frameStartPos
-
-titleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging       = true
-        dragStartPos   = input.Position
-        frameStartPos  = mainFrame.Position
-    end
+-- 传送页（玩家列表，实时刷新）
+bT.MouseButton1Click:Connect(function()
+	clr()
+	local pl = Instance.new("ScrollingFrame"); pl.Size = UDim2.new(1, -10, 1, -6); pl.Position = UDim2.new(0.02, 0, 0, 4)
+	pl.BackgroundTransparency = 1; pl.Parent = ct
+	local ll = Instance.new("UIListLayout"); ll.FillDirection = Enum.FillDirection.Vertical; ll.Padding = UDim.new(0, 4); ll.Parent = pl
+	local function refresh()
+		for _, v in pairs(pl:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+		for _, plr in pairs(Players:GetPlayers()) do
+			if plr ~= p and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+				local tb = Instance.new("TextButton"); tb.Size = UDim2.new(1, 0, 0, 30); tb.BackgroundColor3 = Color3.fromRGB(50,50,60)
+				tb.Text = plr.Name; tb.TextColor3 = Color3.fromRGB(255,255,255); tb.TextScaled = true; tb.Font = Enum.Font.Gotham; tb.Parent = pl
+				local tbc = Instance.new("UICorner"); tbc.CornerRadius = UDim.new(0,8); tbc.Parent = tb
+				tb.MouseButton1Click:Connect(function()
+					if rp and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+						rp.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+					end
+				end)
+			end
+		end
+	end
+	refresh()
+	task.spawn(function() while pl.Parent do task.wait(3); refresh() end end)
 end)
 
-titleBar.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - dragStartPos
-        mainFrame.Position = UDim2.new(
-            frameStartPos.X.Scale, frameStartPos.X.Offset + delta.X,
-            frameStartPos.Y.Scale, frameStartPos.Y.Offset + delta.Y
-        )
-    end
-end)
+bG.MouseButton1Click:Connect(gen)
+gen()
 
-titleBar.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
-    end
-end)
-
--- ============================================================
---  主循环 (飞行 / 防传送 / 激光)
--- ============================================================
+-- ==================== 心跳循环（飞行/防传送/激光） ====================
 rs.Heartbeat:Connect(function()
-    -- 飞行
-    if flying and rp then
-        local cam  = workspace.CurrentCamera
-        local move = Vector3.new()
-
-        local ok_w, w_down = pcall(function() return u:IsKeyDown(Enum.KeyCode.W) end)
-        local ok_s, s_down = pcall(function() return u:IsKeyDown(Enum.KeyCode.S) end)
-        local ok_a, a_down = pcall(function() return u:IsKeyDown(Enum.KeyCode.A) end)
-        local ok_d, d_down = pcall(function() return u:IsKeyDown(Enum.KeyCode.D) end)
-        local ok_sp, sp_down = pcall(function() return u:IsKeyDown(Enum.KeyCode.Space) end)
-        local ok_sh, sh_down = pcall(function() return u:IsKeyDown(Enum.KeyCode.LeftShift) or u:IsKeyDown(Enum.KeyCode.RightShift) end)
-
-        if ok_w and w_down then move = move + cam.CFrame.LookVector end
-        if ok_s and s_down then move = move - cam.CFrame.LookVector end
-        if ok_a and a_down then move = move - cam.CFrame.RightVector end
-        if ok_d and d_down then move = move + cam.CFrame.RightVector end
-        if ok_sp and sp_down then move = move + Vector3.new(0, vSpd, 0) end
-        if ok_sh and sh_down then move = move - Vector3.new(0, vSpd, 0) end
-
-        rp.Velocity = move * hSpd
-    end
-
-    -- 防传送 (强锚定)
-    if anti and rp then
-        rp.Anchored = true
-        task.wait()
-        rp.Anchored = false
-    end
-
-    -- 激光
-    if laser then
-        fireLasers()
-    end
+	if flying and rp then
+		local cam = workspace.CurrentCamera; local move = Vector3.new()
+		if u:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end
+		if u:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end
+		if u:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector end
+		if u:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector end
+		if u:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0, vSpd, 0) end
+		if u:IsKeyDown(Enum.KeyCode.LeftShift) or u:IsKeyDown(Enum.KeyCode.RightShift) then move = move - Vector3.new(0, vSpd, 0) end
+		rp.Velocity = move * hSpd
+	end
+	if anti and rp then rp.Anchored = true; task.wait(); rp.Anchored = false end
+	if laser then fireLasers() end
 end)
 
--- ============================================================
---  初始显示通用页面
--- ============================================================
-showGeneral()
+-- ==================== 悬浮 FAB 按钮（关闭后重新打开） ====================
+local fab = Instance.new("TextButton")
+fab.Size = UDim2.new(0, 52, 0, 52)
+fab.Position = UDim2.new(0, 16, 1, -68)
+fab.Text = "WK"; fab.TextColor3 = Color3.fromRGB(255,255,255); fab.TextScaled = true; fab.Font = Enum.Font.GothamBold
+fab.Parent = getScreenGui()
+createBlurBackground(fab, Color3.fromRGB(30,30,40))
+fab.MouseButton1Click:Connect(function()
+	if card and card.Parent then notice.Dismiss() end
+	task.wait(0.4)
+	notice = GlassNotice.createNotice({
+		Title = "WK 控制面板", Description = "拖拽标题栏移动 · 点击 × 关闭",
+		Duration = math.huge, TintColor = Color3.fromRGB(28, 28, 38), Size = UDim2.new(0, 400, 0, 420),
+	})
+	card = notice.Card
+	-- 重新挂载内容（简化：重新执行构建）
+	content.Parent = card; nv.Parent = content; ct.Parent = content
+end)
 
--- 提示
-print("[WK] 菜单已加载 | 拖拽标题栏移动 | 点击 × 或 _ 最小化到悬浮按钮")
+return GlassNotice
