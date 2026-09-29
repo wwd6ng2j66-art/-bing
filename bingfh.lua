@@ -35,6 +35,7 @@ local TabOther   = Window:CreateTab("其他脚本")
 --// ===== 4. 主页 =====
 TabHome:CreateSection("作者信息")
 TabHome:CreateLabel("作者：榆")
+TabHome:CreateLabel("参与者：心意冰存(嵩)")
 TabHome:CreateParagraph({ Title = "关于作者", Content = "本脚本由 榆 开发，仅供学习交流使用。" })
 
 --// ============================================
@@ -280,6 +281,7 @@ TabNotify:CreateButton({ Name = "测试 - 玩家离开", Callback = function() c
 TabAbout:CreateSection("脚本信息")
 TabAbout:CreateParagraph({ Title = "冰缝合脚本 V2.2", Content = "纯净版：UI 框架 + iOS 玻璃风格玩家进出提示 + Aero 脚本加载 + 其他脚本。" })
 TabAbout:CreateLabel("开发者：榆 QQ3347313900")
+TabAbout:CreateLabel("参与者：心意冰存(嵩) QQ 3629335696")
 TabAbout:CreateLabel("版本：V2.2")
 TabAbout:CreateLabel("风格：iOS Glassmorphism")
 TabAbout:CreateSection("系统")
