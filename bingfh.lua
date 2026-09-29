@@ -1,6 +1,5 @@
 --// ============================================
---         冰缝合脚本 V2.2 - 完整整合版
---   主页 + 进出提示 + 关于 + Aero + 其他脚本
+--         冰缝合脚本 V2.2 - 榆
 -- ============================================
 
 --// ===== 1. 加载 Rayfield UI 库 =====
@@ -26,12 +25,12 @@ local Window = Rayfield:CreateWindow({
     KeySystem = false
 })
 
---// ===== 3. 创建所有标签页（顺序很重要！）=====
+--// ===== 3. 创建所有标签页 =====
 local TabHome    = Window:CreateTab("主页")
 local TabNotify  = Window:CreateTab("进出提示")
 local TabAbout   = Window:CreateTab("关于脚本")
 local TabAero    = Window:CreateTab("Aero")
-local TabOther   = Window:CreateTab("其他脚本") -- ✅ 必须在这里创建，不能漏
+local TabOther   = Window:CreateTab("其他脚本")
 
 --// ===== 4. 主页 =====
 TabHome:CreateSection("作者信息")
@@ -345,26 +344,10 @@ TabAero:CreateParagraph({
 --   10. 其他脚本加载区
 --// ============================================
 local OTHER_URLS = {
-    Escanor = "https://raw.githubusercontent.com/wwd6ng2j66-art/-/main/Escanor%E6%BA%90.lua",
-    Snow    = "https://raw.githubusercontent.com/wwd6ng2j66-art/-/main/Snow%E5%85%A8%E6%BA%90lyy%E7%89%9B%E9%80%BC.lua",
-    Ju      = "https://raw.githubusercontent.com/wwd6ng2j66-art/-/main/%E6%81%90%E8%84%9A%E6%9C%AC%E5%85%A8%E6%BA%90%E6%9C%80%E6%96%B09%E6%9C%8827.lua",
+    StealEgg  = "https://raw.githubusercontent.com/JsYb666/Item/refs/heads/main/Steal-Eggs", -- ✅ 新增
 }
 
 TabOther:CreateSection("其他脚本库")
-
-TabOther:CreateButton({
-    Name = "▶ 加载 Escanor源",
-    Callback = function()
-        loadExternalScript("Escanor源", OTHER_URLS.Escanor)
-    end
-})
-
-TabOther:CreateButton({
-    Name = "▶ 加载 Snow全源",
-    Callback = function()
-        loadExternalScript("Snow全源", OTHER_URLS.Snow)
-    end
-})
 
 TabOther:CreateButton({
     Name = "▶ 加载 惧脚本全源",
@@ -373,8 +356,15 @@ TabOther:CreateButton({
     end
 })
 
+TabOther:CreateButton({
+    Name = "▶ 加载 偷一个蛋 (TX Script)",
+    Callback = function()
+        loadExternalScript("偷一个蛋", OTHER_URLS.StealEgg)
+    end
+})
+
 TabOther:CreateSection("说明")
 TabOther:CreateParagraph({
     Title = "使用说明",
-    Content = "点击按钮后才会加载对应脚本，不会自动运行。三个脚本链接均已验证可正常访问。"
+    Content = "点击按钮后才会加载对应脚本，不会自动运行。所有脚本链接均已验证可正常访问。"
 })
