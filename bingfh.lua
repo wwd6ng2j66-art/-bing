@@ -352,13 +352,6 @@ local OTHER_URLS = {
 TabOther:CreateSection("其他脚本库")
 
 TabOther:CreateButton({
-    Name = "▶ 加载 惧脚本全源",
-    Callback = function()
-        loadExternalScript("惧脚本全源", OTHER_URLS.Ju)
-    end
-})
-
-TabOther:CreateButton({
     Name = "▶ 加载 偷一个蛋 (TX Script)",
     Callback = function()
         loadExternalScript("偷一个蛋", OTHER_URLS.StealEgg)
