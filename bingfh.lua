@@ -1,1045 +1,738 @@
+--// ============================================
+--         冰缝合脚本 - WindUI 终极版 - 榆
+-- ============================================
 
-local _junk = 12345; function _junkFunc() return _junk * 9 end
+--// ===== 0. 通用颜色转换函数（兼容旧版执行器）=====
+local function hexToColor3(hex)
+    hex = hex:gsub("#", "")
+    local r = tonumber(hex:sub(1, 2), 16) or 0
+    local g = tonumber(hex:sub(3, 4), 16) or 0
+    local b = tonumber(hex:sub(5, 6), 16) or 0
+    return Color3.fromRGB(r, g, b)
+end
 
-local v1 = v2(v3:v4(v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v12\\v13\\v7\\v6\\v14\\v15\\v16\\v17\\v18\\v19\\v11\\v20\\v18\\v18\\v7\\v21\\v12\\v22\\v9\\v14\\v9\\v11\\v23\\v13\\v24\\v25\\v26\\v27\\v11\\v28\\v22\\v29\\v22\\v21\\v9\\v22\\v9\\v11\\v29\\v21\\v7\\v22\\v9\\v7\\v11\\v25\\v18\\v30\\v24\\v29\\v18\\v21\\v25\\v11\\v19\\v21\\v13\\v24\\v16\\v29\\v14\\v21'")()))()
-if not v1 then
-v31(v5("return '\\v23\\v13\\v24\\v25\\v26\\v27\\v32\\v33\\v34\\v35\\v33\\v36\\v37\\v38\\v39\\v39\\v33\\v40\\v41\\v38\\v42\\v43\\v44\\v45\\v46\\v38\\v47\\v48\\v49\\v50\\v51\\v49\\v52\\v43\\v53\\v39\\v54\\v53\\v55\\v56\\v49\\v57\\v58\\v49\\v59\\v42\\v49\\v60\\v61\\v49\\v62\\v63\\v38\\v64\\v46\\v33\\v65\\v66\\v67\\v51\\v68'")())
-return
+--// ===== 1. 加载 WindUI 库 =====
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+if not WindUI then
+    warn("WindUI 库加载失败，请检查网络或更换执行器。")
+    return
 end
-v1:v69({ v70 = v5("return '\\v71\\v19\\v15\\v22\\v28'")(), v72 = v73.v74(v5("return '\\v75\\v76\\v77\\v78\\v79\\v79\\v22'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v17\\v81\\v78\\v79\\v82'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v17\\v25\\v84\\v78\\v25'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v82\\v82\\v15\\v22\\v15'")()), v86 = v73.v74(v5("return '\\v75\\v21\\v87\\v21\\v77\\v76\\v22'")()), v88 = v73.v74(v5("return '\\v75\\v89\\v87\\v84\\v90\\v79\\v82'")()), v91 = v73.v74(v5("return '\\v75\\v82\\v15\\v15\\v82\\v77\\v78'")()) })
-v1:v69({ v70 = v5("return '\\v92\\v29\\v21\\v24\\v7'")(), v72 = v73.v74(v5("return '\\v75\\v81\\v93\\v93\\v90\\v84\\v78'")()), v80 = v73.v74(v5("return '\\v75\\v79\\v82\\v81\\v82\\v81\\v89'")()), v83 = v73.v74(v5("return '\\v75\\v78\\v21\\v25\\v22\\v87\\v79'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v79\\v82\\v25\\v82\\v78'")()), v86 = v73.v74(v5("return '\\v75\\v87\\v93\\v22\\v82\\v21\\v17'")()), v88 = v73.v74(v5("return '\\v75\\v81\\v78\\v90\\v84\\v77\\v25'")()), v91 = v73.v74(v5("return '\\v75\\v77\\v77\\v17\\v90\\v90\\v22'")()) })
-v1:v69({ v70 = v5("return '\\v94\\v18\\v7\\v7\\v18\\v24\\v32\\v94\\v21\\v24\\v25\\v95'")(), v72 = v73.v74(v5("return '\\v75\\v89\\v22\\v77\\v77\\v17\\v22'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v21\\v81\\v79\\v77\\v93'")()), v83 = v73.v74(v5("return '\\v75\\v22\\v87\\v89\\v76\\v82\\v76'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v21\\v82\\v90\\v82\\v82'")()), v86 = v73.v74(v5("return '\\v75\\v17\\v78\\v15\\v90\\v82\\v25'")()), v88 = v73.v74(v5("return '\\v75\\v93\\v15\\v77\\v81\\v21\\v87'")()), v91 = v73.v74(v5("return '\\v75\\v25\\v76\\v78\\v93\\v22\\v82'")()) })
-v1:v69({ v70 = v5("return '\\v96\\v18\\v24\\v18\\v97\\v21\\v13\\v32\\v92\\v28\\v18'")(), v72 = v73.v74(v5("return '\\v75\\v77\\v89\\v77\\v87\\v77\\v77'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v22\\v81\\v82\\v81\\v17'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v87\\v82\\v87\\v82\\v77'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v89\\v82\\v89\\v82\\v89'")()), v86 = v73.v74(v5("return '\\v75\\v76\\v79\\v76\\v79\\v87\\v21'")()), v88 = v73.v74(v5("return '\\v75\\v84\\v22\\v84\\v25\\v84\\v77'")()), v91 = v73.v74(v5("return '\\v75\\v21\\v93\\v22\\v77\\v77\\v22'")()) })
-v1:v69({ v70 = v5("return '\\v94\\v28\\v13\\v19\\v9\\v18\\v24'")(), v72 = v73.v74(v5("return '\\v75\\v76\\v76\\v81\\v15\\v81\\v15'")()), v80 = v73.v74(v5("return '\\v75\\v77\\v79\\v79\\v17\\v79\\v17'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v87\\v89\\v81\\v89\\v81'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v22\\v82\\v77\\v82\\v77'")()), v86 = v73.v74(v5("return '\\v75\\v82\\v17\\v21\\v90\\v21\\v90'")()), v88 = v73.v74(v5("return '\\v75\\v89\\v82\\v81\\v25\\v81\\v25'")()), v91 = v73.v74(v5("return '\\v75\\v22\\v82\\v78\\v78\\v78\\v78'")()) })
-v1:v69({ v70 = v5("return '\\v98\\v13\\v18\\v29\\v22\\v7'")(), v72 = v73.v74(v5("return '\\v75\\v78\\v17\\v81\\v25\\v76\\v90'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v89\\v81\\v79\\v77\\v15'")()), v83 = v73.v74(v5("return '\\v75\\v21\\v89\\v87\\v15\\v82\\v21'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v90\\v82\\v84\\v82\\v82'")()), v86 = v73.v74(v5("return '\\v75\\v17\\v78\\v15\\v90\\v82\\v25'")()), v88 = v73.v74(v5("return '\\v75\\v90\\v15\\v77\\v81\\v15\\v93'")()), v91 = v73.v74(v5("return '\\v75\\v87\\v15\\v90\\v17\\v82\\v93'")()) })
-v1:v69({ v70 = v5("return '\\v96\\v13\\v25\\v24\\v13\\v12\\v6\\v7'")(), v72 = v73.v74(v5("return '\\v75\\v81\\v22\\v84\\v21\\v87\\v21'")()), v80 = v73.v74(v5("return '\\v75\\v79\\v82\\v81\\v89\\v77\\v21'")()), v83 = v73.v74(v5("return '\\v75\\v76\\v84\\v17\\v90\\v82\\v25'")()), v85 = v73.v74(v5("return '\\v75\\v22\\v82\\v82\\v93\\v82\\v82'")()), v86 = v73.v74(v5("return '\\v75\\v76\\v78\\v21\\v84\\v15\\v87'")()), v88 = v73.v74(v5("return '\\v75\\v81\\v22\\v78\\v79\\v21\\v82'")()), v91 = v73.v74(v5("return '\\v75\\v84\\v15\\v87\\v77\\v82\\v93'")()) })
-v1:v69({ v70 = v5("return '\\v99\\v18\\v9\\v22'")(), v72 = v73.v74(v5("return '\\v75\\v87\\v87\\v81\\v84\\v84\\v89'")()), v80 = v73.v74(v5("return '\\v75\\v77\\v84\\v79\\v22\\v81\\v93'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v25\\v21\\v78\\v21\\v82'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v82\\v82\\v81\\v82\\v77'")()), v86 = v73.v74(v5("return '\\v75\\v82\\v25\\v21\\v78\\v21\\v82'")()), v88 = v73.v74(v5("return '\\v75\\v76\\v82\\v81\\v77\\v84\\v76'")()), v91 = v73.v74(v5("return '\\v75\\v82\\v78\\v84\\v82\\v90\\v22'")()) })
-v1:v69({ v70 = v5("return '\\v96\\v22\\v29\\v29\\v18\\v30\\v9\\v13'")(), v72 = v73.v74(v5("return '\\v75\\v89\\v87\\v84\\v90\\v79\\v82'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v17\\v81\\v77\\v79\\v21'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v17\\v25\\v84\\v78\\v25'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v82\\v82\\v15\\v22\\v15'")()), v86 = v73.v74(v5("return '\\v75\\v21\\v87\\v21\\v77\\v76\\v22'")()), v88 = v73.v74(v5("return '\\v75\\v89\\v81\\v84\\v82\\v81\\v77'")()), v91 = v73.v74(v5("return '\\v75\\v82\\v15\\v15\\v82\\v77\\v78'")()) })
-v1:v69({ v70 = v5("return '\\v100\\v97\\v95'")(), v72 = v73.v74(v5("return '\\v75\\v79\\v22\\v89\\v78\\v76\\v79'")()), v80 = v73.v74(v5("return '\\v75\\v79\\v17\\v81\\v25\\v77\\v78'")()), v83 = v73.v74(v5("return '\\v75\\v90\\v22\\v22\\v21\\v25\\v78'")()), v85 = v73.v74(v5("return '\\v75\\v22\\v17\\v82\\v22\\v82\\v82'")()), v86 = v73.v74(v5("return '\\v75\\v90\\v22\\v22\\v21\\v25\\v78'")()), v88 = v73.v74(v5("return '\\v75\\v81\\v90\\v90\\v22\\v89\\v90'")()), v91 = v73.v74(v5("return '\\v75\\v81\\v78\\v15\\v87\\v21\\v93'")()) })
-v1:v69({ v70 = v5("return '\\v27\\v24\\v25\\v13\\v12\\v18'")(), v72 = v73.v74(v5("return '\\v75\\v84\\v81\\v77\\v22\\v87\\v81'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v77\\v81\\v78\\v77\\v25'")()), v83 = v73.v74(v5("return '\\v75\\v21\\v90\\v15\\v78\\v82\\v17'")()), v85 = v73.v74(v5("return '\\v75\\v22\\v22\\v82\\v77\\v82\\v82'")()), v86 = v73.v74(v5("return '\\v75\\v21\\v90\\v15\\v78\\v82\\v17'")()), v88 = v73.v74(v5("return '\\v75\\v84\\v89\\v84\\v79\\v21\\v84'")()), v91 = v73.v74(v5("return '\\v75\\v93\\v84\\v93\\v93\\v82\\v81'")()) })
-v1:v69({ v70 = v5("return '\\v99\\v22\\v25'")(), v72 = v73.v74(v5("return '\\v75\\v15\\v76\\v81\\v17\\v81\\v17'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v82\\v79\\v25\\v79\\v25'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v17\\v21\\v90\\v21\\v90'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v22\\v82\\v77\\v82\\v77'")()), v86 = v73.v74(v5("return '\\v75\\v82\\v17\\v21\\v90\\v21\\v90'")()), v88 = v73.v74(v5("return '\\v75\\v76\\v76\\v81\\v15\\v81\\v15'")()), v91 = v73.v74(v5("return '\\v75\\v22\\v82\\v78\\v78\\v78\\v78'")()) })
-v1:v69({ v70 = v5("return '\\v101\\v19\\v22\\v28\\v21\\v29\\v25'")(), v72 = v73.v74(v5("return '\\v75\\v79\\v78\\v89\\v87\\v90\\v89'")()), v80 = v73.v74(v5("return '\\v75\\v79\\v17\\v81\\v17\\v81\\v93'")()), v83 = v73.v74(v5("return '\\v75\\v93\\v22\\v22\\v89\\v15\\v89'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v79\\v82\\v25\\v82\\v21'")()), v86 = v73.v74(v5("return '\\v75\\v93\\v22\\v22\\v89\\v15\\v89'")()), v88 = v73.v74(v5("return '\\v75\\v79\\v93\\v90\\v82\\v78\\v93'")()), v91 = v73.v74(v5("return '\\v75\\v81\\v79\\v15\\v76\\v87\\v81'")()) })
-v1:v69({ v70 = v5("return '\\v102\\v21\\v28\\v97'")(), v72 = v73.v74(v5("return '\\v75\\v81\\v87\\v81\\v87\\v81\\v15'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v79\\v81\\v79\\v81\\v79'")()), v83 = v73.v74(v5("return '\\v75\\v20\\v20\\v20\\v20\\v20\\v20'")()), v85 = v73.v74(v5("return '\\v75\\v20\\v20\\v20\\v20\\v20\\v20'")()), v86 = v73.v74(v5("return '\\v75\\v89\\v21\\v89\\v21\\v89\\v21'")()), v88 = v73.v74(v5("return '\\v75\\v90\\v77\\v90\\v77\\v90\\v15'")()), v91 = v73.v74(v5("return '\\v75\\v21\\v81\\v21\\v81\\v21\\v21'")()) })
-local v103 = v3:v104(v5("return '\\v94\\v18\\v24\\v7\\v22\\v24\\v7\\v92\\v28\\v18\\v105\\v13\\v25\\v22\\v28'")())
-local v106 = v3:v104(v5("return '\\v92\\v29\\v21\\v95\\v22\\v28\\v9'")())
-local v107 = v106.v108
-local v109 = {
-v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11\\v81\\v81\\v93\\v77\\v81\\v81\\v84\\v87\\v76\\v78\\v93\\v90\\v84\\v81\\v87'")(),
-v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11\\v76\\v77\\v87\\v87\\v84\\v90\\v87\\v87\\v90\\v78\\v76\\v76\\v76\\v76'")(),
-v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11\\v81\\v79\\v87\\v76\\v81\\v89\\v84\\v79\\v87\\v89\\v79\\v81\\v93\\v93\\v78'")(),
-v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11\\v81\\v79\\v81\\v84\\v76\\v79\\v77\\v84\\v84\\v93\\v76\\v84\\v93\\v76\\v79'")(),
+
+--// ============================================
+--   2. 注册所有主题（已替换为 hexToColor3）
+--// ============================================
+WindUI:AddTheme({ Name = "Amber", Accent = hexToColor3("#92400e"), Background = hexToColor3("#1c140f"), Outline = hexToColor3("#fcd34d"), Text = hexToColor3("#fffbeb"), Placeholder = hexToColor3("#a8a29e"), Button = hexToColor3("#78350f"), Icon = hexToColor3("#fbbf24") })
+WindUI:AddTheme({ Name = "Plant", Accent = hexToColor3("#166534"), Background = hexToColor3("#0f1f17"), Outline = hexToColor3("#4ade80"), Text = hexToColor3("#f0fdf4"), Placeholder = hexToColor3("#86efac"), Button = hexToColor3("#14532d"), Icon = hexToColor3("#22c55e") })
+WindUI:AddTheme({ Name = "Cotton Candy", Accent = hexToColor3("#7e22ce"), Background = hexToColor3("#1a1026"), Outline = hexToColor3("#e879f9"), Text = hexToColor3("#faf5ff"), Placeholder = hexToColor3("#c4b5fd"), Button = hexToColor3("#6b21a8"), Icon = hexToColor3("#d946ef") })
+WindUI:AddTheme({ Name = "Monokai Pro", Accent = hexToColor3("#272822"), Background = hexToColor3("#1e1f1c"), Outline = hexToColor3("#f8f8f2"), Text = hexToColor3("#f7f7f7"), Placeholder = hexToColor3("#90908a"), Button = hexToColor3("#3e3d32"), Icon = hexToColor3("#a6e22e") })
+WindUI:AddTheme({ Name = "Crimson", Accent = hexToColor3("#991b1b"), Background = hexToColor3("#200c0c"), Outline = hexToColor3("#f87171"), Text = hexToColor3("#fef2f2"), Placeholder = hexToColor3("#fca5a5"), Button = hexToColor3("#7f1d1d"), Icon = hexToColor3("#ef4444") })
+WindUI:AddTheme({ Name = "Violet", Accent = hexToColor3("#4c1d95"), Background = hexToColor3("#17102b"), Outline = hexToColor3("#a78bfa"), Text = hexToColor3("#f5f3ff"), Placeholder = hexToColor3("#c4b5fd"), Button = hexToColor3("#5b21b6"), Icon = hexToColor3("#8b5cf6") })
+WindUI:AddTheme({ Name = "Midnight", Accent = hexToColor3("#1e3a8a"), Background = hexToColor3("#0f172a"), Outline = hexToColor3("#93c5fd"), Text = hexToColor3("#eff6ff"), Placeholder = hexToColor3("#94a3b8"), Button = hexToColor3("#1e40af"), Icon = hexToColor3("#3b82f6") })
+WindUI:AddTheme({ Name = "Rose", Accent = hexToColor3("#881337"), Background = hexToColor3("#230e16"), Outline = hexToColor3("#fda4af"), Text = hexToColor3("#fff1f2"), Placeholder = hexToColor3("#fda4af"), Button = hexToColor3("#9f1239"), Icon = hexToColor3("#f43f5e") })
+WindUI:AddTheme({ Name = "Mellowsi", Accent = hexToColor3("#78350f"), Background = hexToColor3("#1c120a"), Outline = hexToColor3("#fcd34d"), Text = hexToColor3("#fffbeb"), Placeholder = hexToColor3("#a8a29e"), Button = hexToColor3("#713f12"), Icon = hexToColor3("#fbbf24") })
+WindUI:AddTheme({ Name = "Sky", Accent = hexToColor3("#0e7490"), Background = hexToColor3("#0c1d24"), Outline = hexToColor3("#5eead4"), Text = hexToColor3("#ecfeff"), Placeholder = hexToColor3("#5eead4"), Button = hexToColor3("#155e75"), Icon = hexToColor3("#14b8a6") })
+WindUI:AddTheme({ Name = "Indigo", Accent = hexToColor3("#312e81"), Background = hexToColor3("#12142d"), Outline = hexToColor3("#a5b4fc"), Text = hexToColor3("#eef2ff"), Placeholder = hexToColor3("#a5b4fc"), Button = hexToColor3("#3730a3"), Icon = hexToColor3("#6366f1") })
+WindUI:AddTheme({ Name = "Red", Accent = hexToColor3("#b91c1c"), Background = hexToColor3("#1f0d0d"), Outline = hexToColor3("#fca5a5"), Text = hexToColor3("#fef2f2"), Placeholder = hexToColor3("#fca5a5"), Button = hexToColor3("#991b1b"), Icon = hexToColor3("#ef4444") })
+WindUI:AddTheme({ Name = "Emerald", Accent = hexToColor3("#047857"), Background = hexToColor3("#0c1c16"), Outline = hexToColor3("#6ee7b7"), Text = hexToColor3("#f0fdfa"), Placeholder = hexToColor3("#6ee7b7"), Button = hexToColor3("#065f46"), Icon = hexToColor3("#10b981") })
+WindUI:AddTheme({ Name = "Dark", Accent = hexToColor3("#18181b"), Background = hexToColor3("#101010"), Outline = hexToColor3("#FFFFFF"), Text = hexToColor3("#FFFFFF"), Placeholder = hexToColor3("#7a7a7a"), Button = hexToColor3("#52525b"), Icon = hexToColor3("#a1a1aa") })
+
+--// ============================================
+--   3. 背景 / UI黑色透明度 管理模块
+--// ============================================
+local ContentProvider = game:GetService("ContentProvider")
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+local BG_LIST = {
+    "rbxassetid://116211389465318",
+    "rbxassetid://92883588549999",
+    "rbxassetid://108917308701664",
+    "rbxassetid://101390233693690",
 }
-local v111 = { v5("return '\\v38\\v112\\v46\\v49\\v65\\v47\\v32\\v81'")(), v5("return '\\v38\\v112\\v46\\v49\\v65\\v47\\v32\\v77'")(), v5("return '\\v38\\v112\\v46\\v49\\v65\\v47\\v32\\v84'")(), v5("return '\\v38\\v112\\v46\\v49\\v65\\v47\\v32\\v78'")() }
-local v113 = v109[1]
-local v114 = nil
-v115.v116(function()
-v117(function() v103:v118(v109) end)
+local BG_NAMES = { "背景 1", "背景 2", "背景 3", "背景 4" }
+
+local CurrentBG = BG_LIST[1]
+local CurrentBGTransparency = 0.15
+
+-- ★ UI黑色透明度
+local UIDarkTransparency = 0.75
+local EnhancedTransparency = false
+local ENHANCED_VALUE = 0.92
+
+local MainWindowFrame = nil
+local DarkFrames = {}
+
+task.spawn(function()
+    pcall(function() ContentProvider:PreloadAsync(BG_LIST) end)
 end)
-local function v119(v120)
-if not v120 or v121(v120) ~= v5("return '\\v9\\v7\\v28\\v13\\v24\\v12'")() or v120 == v5("return ''")() then return nil end
-v120 = v122(v120):v123(v5("return '\\v124\\v9'")(), v5("return ''")())
-if v120 == v5("return ''")() then return nil end
-if v125.v126(v120, v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11'")()) or v125.v126(v120, v5("return '\\v28\\v15\\v110\\v7\\v6\\v14\\v19\\v15\\v10\\v11\\v11'")()) or v125.v126(v120, v5("return '\\v6\\v7\\v7\\v8'")()) then return v120 end
-if v125.v127(v120, v5("return '\\v128\\v124\\v25\\v129\\v130'")()) then return v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11'")() .. v120 end
-return nil
+
+local function normalizeImageId(id)
+    if not id or type(id) ~= "string" or id == "" then return nil end
+    id = tostring(id):gsub("%s", "")
+    if id == "" then return nil end
+    if string.find(id, "rbxassetid://") or string.find(id, "rbxthumb://") or string.find(id, "http") then return id end
+    if string.match(id, "^%d+$") then return "rbxassetid://" .. id end
+    return nil
 end
-function v131(v120)
-if not v120 or v121(v120) ~= v5("return '\\v9\\v7\\v28\\v13\\v24\\v12'")() or v120 == v5("return ''")() then return end
-local v132 = v119(v120)
-if not v132 then
-v1:v133({ v134 = v5("return '\\v135\\v136\\v65\\v38\\v47\\v47'")(), v137 = v5("return '\\v49\\v138\\v37\\v49\\v139\\v57\\v53\\v140\\v141\\v33\\v59\\v142\\v53\\v62\\v143\\v32\\v27\\v102'")(), v91 = v5("return '\\v110'")(), v144 = 3 })
-return
+
+function applyBackgroundImage(id)
+    if not id or type(id) ~= "string" or id == "" then return end
+    local normalized = normalizeImageId(id)
+    if not normalized then
+        WindUI:Notify({ Title = "错误", Content = "无效的图片 ID", Icon = "x", Duration = 3 })
+        return
+    end
+    CurrentBG = normalized
+    task.spawn(function() pcall(function() ContentProvider:PreloadAsync({ CurrentBG }) end) end)
+
+    if MainWindowFrame and MainWindowFrame.Parent then
+        local holder = MainWindowFrame:FindFirstChild("BgImageHolder")
+        if holder then
+            local img = holder:FindFirstChild("WindowBackground")
+            if img then
+                img.Image = ""
+                task.wait(0.05)
+                img.Image = CurrentBG
+                img.ImageTransparency = CurrentBGTransparency
+            end
+        end
+    end
+    WindUI:Notify({ Title = "背景已更新", Content = CurrentBG, Icon = "check", Duration = 2 })
 end
-v113 = v132
-v115.v116(function() v117(function() v103:v118({ v113 }) end) end)
-if v114 and v114.v145 then
-local v146 = v114:v147(v5("return '\\v148\\v12\\v27\\v19\\v21\\v12\\v22\\v149\\v18\\v29\\v25\\v22\\v28'")())
-if v146 then
-local v150 = v146:v147(v5("return '\\v23\\v13\\v24\\v25\\v18\\v30\\v148\\v21\\v17\\v97\\v12\\v28\\v18\\v14\\v24\\v25'")())
-if v150 then
-v150.v151 = v5("return ''")()
-v115.v152(0.05)
-v150.v151 = v113
-v150.v153 = 0
+
+-- 递归收集所有黑色 Frame（扩大识别范围，确保UI透明度生效）
+local function collectDarkFrames()
+    DarkFrames = {}
+    if not MainWindowFrame then return end
+
+    local function scan(obj)
+        for _, child in ipairs(obj:GetChildren()) do
+            if child:IsA("Frame") then
+                -- 排除我们自己的特殊组件
+                if child.Name ~= "BgImageHolder"
+                    and child.Name ~= "MarqueeOverlay"
+                    and child.Name ~= "WindowBackground"
+                    and child.Visible then
+                    local c = child.BackgroundColor3
+                    local area = child.AbsoluteSize.X * child.AbsoluteSize.Y
+                    -- 扩大深色识别范围：RGB低于0.5的都算，面积够大
+                    local isDark = c.R < 0.5 and c.G < 0.5 and c.B < 0.5
+                    if isDark and area > 200 and child.BackgroundTransparency < 0.95 then
+                        table.insert(DarkFrames, child)
+                    end
+                end
+                scan(child)
+            elseif child:IsA("CanvasGroup") then
+                scan(child)
+            end
+        end
+    end
+    scan(MainWindowFrame)
 end
+
+-- ★ 应用 UI 黑色透明度
+function applyUIDarkTransparency()
+    local target = EnhancedTransparency and ENHANCED_VALUE or UIDarkTransparency
+    for _, f in ipairs(DarkFrames) do
+        if f and f.Parent then
+            f.BackgroundTransparency = target
+        end
+    end
 end
+
+-- ★ 寻找 WindUI 主窗口（精准定位）
+local function findWindUIWindow()
+    local containers = { game:GetService("CoreGui") }
+    local ok, hui = pcall(function() return gethui() end)
+    if ok and hui then table.insert(containers, 1, hui) end
+    local pg = player:FindFirstChild("PlayerGui")
+    if pg then table.insert(containers, pg) end
+
+    local viewport = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1920, 1080)
+    local screenArea = viewport.X * viewport.Y
+
+    for _, c in ipairs(containers) do
+        for _, sg in ipairs(c:GetChildren()) do
+            if sg:IsA("ScreenGui") and (string.find(string.lower(sg.Name), "windui") or string.find(string.lower(sg.Name), "wind")) then
+                local bestFrame = nil
+                local bestArea = 0
+                for _, d in ipairs(sg:GetDescendants()) do
+                    if d:IsA("Frame") and d.Visible and d:FindFirstChildOfClass("UICorner") then
+                        local area = d.AbsoluteSize.X * d.AbsoluteSize.Y
+                        -- 寻找面积合适（不是全屏遮罩）且带圆角的Frame
+                        if area > 10000 and area < screenArea * 0.9 then
+                            if area > bestArea then
+                                bestArea = area
+                                bestFrame = d
+                            end
+                        end
+                    end
+                end
+                if bestFrame then return bestFrame end
+            end
+        end
+    end
+    return nil
 end
-v1:v133({ v134 = v5("return '\\v38\\v112\\v46\\v49\\v65\\v47\\v33\\v48\\v154\\v49\\v59\\v42\\v49\\v58\\v155'")(), v137 = v113, v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 2 })
+
+-- ★ 创建彩虹跑马灯（强制覆盖在窗口边缘，清除原有黑边框）
+local function ensureMarquee(main, radius)
+    -- 清除之前可能残留的覆盖层
+    local old = main:FindFirstChild("MarqueeOverlay")
+    if old then old:Destroy() end
+
+    -- 移除 WindUI 自带的黑色边框，防止覆盖我们的跑马灯
+    for _, child in ipairs(main:GetChildren()) do
+        if child:IsA("UIStroke") and child.Name ~= "MarqueeStroke" then
+            child.Transparency = 1 -- 隐藏自带黑边
+        end
+    end
+
+    local overlay = Instance.new("Frame")
+    overlay.Name = "MarqueeOverlay"
+    overlay.BackgroundTransparency = 1
+    overlay.Size = UDim2.new(1, 0, 1, 0)
+    overlay.Position = UDim2.new(0, 0, 0, 0)
+    overlay.ZIndex = 99999 -- 绝对最高层，防止被遮挡
+    overlay.ClipsDescendants = false
+    overlay.Parent = main
+
+    local oc = Instance.new("UICorner")
+    oc.CornerRadius = UDim.new(0, radius)
+    oc.Parent = overlay
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Name = "MarqueeStroke"
+    stroke.Thickness = 3
+    stroke.Transparency = 0.05
+    -- ★ 关键修复：必须设置底色为白色，UIGradient 才能正常显示彩虹色，否则默认是黑色
+    stroke.Color = Color3.fromRGB(255, 255, 255)
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Parent = overlay
+
+    local grad = Instance.new("UIGradient")
+    grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0, 210, 255)),
+        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(130, 80, 255)),
+        ColorSequenceKeypoint.new(0.66, Color3.fromRGB(255, 60, 160)),
+        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 210, 255)),
+    })
+    grad.Parent = stroke
+
+    -- 彩虹旋转动画
+    task.spawn(function()
+        local t = 0
+        while overlay.Parent do
+            t += task.wait(0.03)
+            grad.Rotation = (t * 180) % 360
+        end
+    end)
+
+    -- 呼吸闪烁动画
+    task.spawn(function()
+        while overlay.Parent do
+            TweenService:Create(stroke, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.4 }):Play()
+            task.wait(1.2)
+            if not overlay.Parent then break end
+            TweenService:Create(stroke, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.05 }):Play()
+            task.wait(1.2)
+        end
+    end)
 end
-local function v156()
-local v157 = { v3:v104(v5("return '\\v94\\v18\\v28\\v22\\v158\\v14\\v13'")()) }
-local v159, v160 = v117(function() return v161() end)
-if v159 and v160 then v162.v163(v157, 1, v160) end
-local v164 = v107:v147(v5("return '\\v92\\v29\\v21\\v95\\v22\\v28\\v158\\v14\\v13'")())
-if v164 then v162.v163(v157, v164) end
-for v165, v166 in v167(v157) do
-for v165, v168 in v167(v166:v169()) do
-if v168:v170(v5("return '\\v100\\v17\\v28\\v22\\v22\\v24\\v158\\v14\\v13'")()) and (v125.v126(v125.v171(v168.v70), v5("return '\\v30\\v13\\v24\\v25\\v14\\v13'")()) or v125.v126(v125.v171(v168.v70), v5("return '\\v30\\v13\\v24\\v25'")())) then
-local v172, v173 = nil, 0
-for v165, v174 in v167(v168:v175()) do
-if v174:v170(v5("return '\\v20\\v28\\v21\\v19\\v22'")()) and v174:v176(v5("return '\\v26\\v27\\v94\\v18\\v28\\v24\\v22\\v28'")()) then
-local v177 = v174.v178.v179 * v174.v178.v180
-if v177 > v173 then
-v173 = v177
-v172 = v174
+
+-- ★ 注入背景 + 跑马灯
+local function applyWindUITheme()
+    local main = findWindUIWindow()
+    if not main then return end
+    MainWindowFrame = main
+
+    main.ClipsDescendants = false
+    collectDarkFrames()
+    applyUIDarkTransparency()
+
+    local radius = 12
+    local mc = main:FindFirstChildOfClass("UICorner")
+    if mc and typeof(mc.CornerRadius) == "UDim" then radius = mc.CornerRadius.Offset end
+
+    -- 注入背景图
+    if not main:FindFirstChild("BgImageHolder") then
+        local holder = Instance.new("Frame")
+        holder.Name = "BgImageHolder"
+        holder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        holder.BackgroundTransparency = 0.85
+        holder.Size = UDim2.new(1, 0, 1, 0)
+        holder.ClipsDescendants = true
+        holder.ZIndex = -10
+        holder.Parent = main
+
+        local hc = Instance.new("UICorner")
+        hc.CornerRadius = UDim.new(0, radius)
+        hc.Parent = holder
+
+        local img = Instance.new("ImageLabel")
+        img.Name = "WindowBackground"
+        img.BackgroundTransparency = 1
+        img.Size = UDim2.new(1, 0, 1, 0)
+        img.Image = CurrentBG
+        img.ScaleType = Enum.ScaleType.Crop
+        img.ImageTransparency = CurrentBGTransparency
+        img.ZIndex = 0
+        img.Parent = holder
+    end
+
+    -- 注入跑马灯
+    ensureMarquee(main, radius)
 end
-end
-end
-if v172 then return v172 end
-end
-end
-end
-return nil
-end
-local function v181()
-local v182 = v156()
-if not v182 then return end
-v114 = v182
-v182.v183 = 1
-v182.v184 = false
-for v165, v185 in v167(v182:v169()) do
-if v185:v170(v5("return '\\v20\\v28\\v21\\v19\\v22'")()) and v185.v70 ~= v5("return '\\v148\\v12\\v27\\v19\\v21\\v12\\v22\\v149\\v18\\v29\\v25\\v22\\v28'")() and v185.v70 ~= v5("return '\\v96\\v21\\v28\\v186\\v14\\v22\\v22\\v158\\v29\\v18\\v30'")() then
-if v185.v187.v188 < 0.2 and v185.v187.v189 < 0.2 and v185.v187.v190 < 0.2 then
-v185.v183 = 0.9
-end
-end
-end
-local v191 = 12
-local v192 = v182:v176(v5("return '\\v26\\v27\\v94\\v18\\v28\\v24\\v22\\v28'")())
-if v192 and v193(v192.v194) == v5("return '\\v26\\v102\\v13\\v19'")() then v191 = v192.v194.v195 end
-if not v182:v147(v5("return '\\v148\\v12\\v27\\v19\\v21\\v12\\v22\\v149\\v18\\v29\\v25\\v22\\v28'")()) then
-local v146 = v196.v197(v5("return '\\v20\\v28\\v21\\v19\\v22'")())
-v146.v70 = v5("return '\\v148\\v12\\v27\\v19\\v21\\v12\\v22\\v149\\v18\\v29\\v25\\v22\\v28'")()
-v146.v187 = v73.v198(255, 255, 255)
-v146.v183 = 0.85
-v146.v199 = v200.v197(1, 0, 1, 0)
-v146.v184 = true
-v146.v201 = -10
-v146.v145 = v182
-local v202 = v196.v197(v5("return '\\v26\\v27\\v94\\v18\\v28\\v24\\v22\\v28'")())
-v202.v194 = v203.v197(0, v191)
-v202.v145 = v146
-local v150 = v196.v197(v5("return '\\v27\\v19\\v21\\v12\\v22\\v204\\v21\\v15\\v22\\v29'")())
-v150.v70 = v5("return '\\v23\\v13\\v24\\v25\\v18\\v30\\v148\\v21\\v17\\v97\\v12\\v28\\v18\\v14\\v24\\v25'")()
-v150.v183 = 1
-v150.v199 = v200.v197(1, 0, 1, 0)
-v150.v151 = v113
-v150.v205 = v206.v205.v207
-v150.v153 = 0
-v150.v201 = 0
-v150.v145 = v146
-end
-if not v182:v147(v5("return '\\v96\\v21\\v28\\v186\\v14\\v22\\v22\\v100\\v7\\v28\\v18\\v97\\v22'")()) then
-local v208 = v196.v197(v5("return '\\v26\\v27\\v100\\v7\\v28\\v18\\v97\\v22'")())
-v208.v70 = v5("return '\\v96\\v21\\v28\\v186\\v14\\v22\\v22\\v100\\v7\\v28\\v18\\v97\\v22'")()
-v208.v209 = 2.5
-v208.v210 = 0.1
-v208.v211 = v206.v211.v212
-v208.v145 = v182
-local v213 = v196.v197(v5("return '\\v26\\v27\\v158\\v28\\v21\\v25\\v13\\v22\\v24\\v7'")())
-v213.v214 = v215.v197({
-v216.v197(0.00, v73.v198(0, 210, 255)),
-v216.v197(0.50, v73.v198(255, 60, 160)),
-v216.v197(1.00, v73.v198(0, 210, 255)),
-})
-v213.v145 = v208
-v115.v116(function()
-local v217 = 0
-while v208.v145 do
-v217 += v115.v152(0.03)
-v213.v218 = (v217 * 150) % 360
-end
+
+-- ★ 监控窗口状态，保持一切正常
+task.spawn(function()
+    for _ = 1, 50 do
+        task.wait(0.1)
+        if findWindUIWindow() then break end
+    end
+    task.wait(0.5)
+    applyWindUITheme()
+
+    local tick = 0
+    while true do
+        task.wait(0.5)
+        tick = tick + 1
+
+        if MainWindowFrame and MainWindowFrame.Parent then
+            -- 保活背景图
+            local holder = MainWindowFrame:FindFirstChild("BgImageHolder")
+            if holder then
+                holder.ZIndex = -10
+                local img = holder:FindFirstChild("WindowBackground")
+                if img then
+                    img.ZIndex = 0
+                    img.ImageTransparency = CurrentBGTransparency
+                end
+            end
+
+            -- 保活跑马灯
+            if not MainWindowFrame:FindFirstChild("MarqueeOverlay") then
+                local radius = 12
+                local mc = MainWindowFrame:FindFirstChildOfClass("UICorner")
+                if mc and typeof(mc.CornerRadius) == "UDim" then radius = mc.CornerRadius.Offset end
+                ensureMarquee(MainWindowFrame, radius)
+            end
+
+            -- 每2秒重新收集一次深色Frame（防止打开新面板时透明度失效）
+            if tick % 4 == 0 then collectDarkFrames() end
+            applyUIDarkTransparency()
+        else
+            MainWindowFrame = nil
+            DarkFrames = {}
+            applyWindUITheme()
+        end
+    end
 end)
-v115.v116(function()
-while v208.v145 do
-v219:v220(v208, v221.v197(1.2, v206.v222.v223, v206.v224.v225), { v210 = 0.45 }):v226()
-v115.v152(1.2)
-if not v208.v145 then break end
-v219:v220(v208, v221.v197(1.2, v206.v222.v223, v206.v224.v225), { v210 = 0.05 }):v226()
-v115.v152(1.2)
+
+--// ============================================
+--   4. 玩家进出提示（卡片自带跑马灯）
+--// ============================================
+local NotifyEnabled   = true
+local MaxNotices      = 5
+local NoticeDuration  = 3.0
+local activeNotices   = {}
+
+local NotifyGui = Instance.new("ScreenGui")
+NotifyGui.Name = "iOSNotifyGui"
+NotifyGui.ResetOnSpawn = false
+NotifyGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+NotifyGui.Parent = player:WaitForChild("PlayerGui")
+
+local RightContainer = Instance.new("Frame")
+RightContainer.Name = "RightContainer"
+RightContainer.Size = UDim2.new(0, 300, 1, -60)
+RightContainer.Position = UDim2.new(1, -310, 0, 30)
+RightContainer.BackgroundTransparency = 1
+RightContainer.ClipsDescendants = true
+RightContainer.Parent = NotifyGui
+
+local UIList = Instance.new("UIListLayout")
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+UIList.Padding = UDim.new(0, 12)
+UIList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+UIList.VerticalAlignment = Enum.VerticalAlignment.Top
+UIList.Parent = RightContainer
+
+local function addCardMarquee(card)
+    local stroke = Instance.new("UIStroke")
+    stroke.Name = "CardMarquee"
+    stroke.Thickness = 2
+    stroke.Transparency = 0.1
+    stroke.Color = Color3.fromRGB(255, 255, 255) -- 必须设为白色
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Parent = card
+
+    local grad = Instance.new("UIGradient")
+    grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0, 210, 255)),
+        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(130, 80, 255)),
+        ColorSequenceKeypoint.new(0.66, Color3.fromRGB(255, 60, 160)),
+        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 210, 255)),
+    })
+    grad.Parent = stroke
+
+    task.spawn(function()
+        local t = 0
+        while card.Parent do
+            t += task.wait(0.03)
+            grad.Rotation = (t * 180) % 360
+        end
+    end)
+    task.spawn(function()
+        while card.Parent do
+            TweenService:Create(stroke, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.45 }):Play()
+            task.wait(1.2)
+            if not card.Parent then break end
+            TweenService:Create(stroke, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.05 }):Play()
+            task.wait(1.2)
+        end
+    end)
 end
+
+local function createNotice(plrName, isJoin)
+    if not NotifyEnabled then return end
+    if #activeNotices >= MaxNotices then
+        local oldest = table.remove(activeNotices, 1)
+        if oldest and oldest.Parent then oldest:Destroy() end
+    end
+
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(0, 280, 0, 56)
+    card.BackgroundColor3 = isJoin and Color3.fromRGB(48, 209, 88) or Color3.fromRGB(255, 59, 48)
+    card.BackgroundTransparency = 0.75
+    card.BorderSizePixel = 0
+    card.ClipsDescendants = true
+    card.LayoutOrder = tick()
+    card.Parent = RightContainer
+    local cardCorner = Instance.new("UICorner")
+    cardCorner.CornerRadius = UDim.new(0, 16)
+    cardCorner.Parent = card
+
+    addCardMarquee(card)
+
+    local overlay = Instance.new("Frame")
+    overlay.Size = UDim2.new(1, 0, 0.5, 0)
+    overlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    overlay.BackgroundTransparency = 0.88
+    overlay.BorderSizePixel = 0
+    overlay.Parent = card
+    local oc = Instance.new("UICorner")
+    oc.CornerRadius = UDim.new(0, 16)
+    oc.Parent = overlay
+
+    local textX = 28
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(0, 280 - textX - 16, 0, 22)
+    title.Position = UDim2.new(0, textX, 0, 8)
+    title.BackgroundTransparency = 1
+    title.Text = isJoin and "玩家加入" or "玩家离开"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextSize = 15
+    title.Font = Enum.Font.GothamSemibold
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.TextTransparency = 1
+    title.Parent = card
+
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(0, 280 - textX - 16, 0, 18)
+    nameLabel.Position = UDim2.new(0, textX, 0, 30)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = plrName
+    nameLabel.TextColor3 = Color3.fromRGB(230, 230, 230)
+    nameLabel.TextSize = 13
+    nameLabel.Font = Enum.Font.Gotham
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    nameLabel.TextTransparency = 1
+    nameLabel.Parent = card
+
+    card.Position = UDim2.new(0, 300, 0, 0)
+    table.insert(activeNotices, card)
+
+    TweenService:Create(card, TweenInfo.new(0.45, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Position = UDim2.new(0, 0, 0, 0) }):Play()
+    TweenService:Create(title, TweenInfo.new(0.35), { TextTransparency = 0 }):Play()
+    TweenService:Create(nameLabel, TweenInfo.new(0.35), { TextTransparency = 0 }):Play()
+
+    task.delay(NoticeDuration, function()
+        TweenService:Create(card, TweenInfo.new(0.7, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut), { Position = UDim2.new(0, -300, 0, 0) }):Play()
+        TweenService:Create(title, TweenInfo.new(0.6), { TextTransparency = 1 }):Play()
+        TweenService:Create(nameLabel, TweenInfo.new(0.6), { TextTransparency = 1 }):Play()
+        task.delay(0.8, function()
+            if card and card.Parent then card:Destroy() end
+            for i, v in ipairs(activeNotices) do
+                if v == card then table.remove(activeNotices, i); break end
+            end
+        end)
+    end)
+end
+
+Players.PlayerAdded:Connect(function(plr) if plr ~= player then createNotice(plr.Name, true) end end)
+Players.PlayerRemoving:Connect(function(plr) if plr ~= player then createNotice(plr.Name, false) end end)
+task.defer(function()
+    for _, plr in ipairs(Players:GetPlayers()) do if plr ~= player then createNotice(plr.Name, true) end end
 end)
-end
-end
-v115.v116(function()
-for v165 = 1, 50 do
-v115.v152(0.1)
-if v156() then break end
-end
-v115.v152(0.5)
-v181()
-while true do
-v115.v152(0.5)
-if v114 and v114.v145 then
-v114.v183 = 1
-local v146 = v114:v147(v5("return '\\v148\\v12\\v27\\v19\\v21\\v12\\v22\\v149\\v18\\v29\\v25\\v22\\v28'")())
-if v146 then
-v146.v201 = -10
-local v150 = v146:v147(v5("return '\\v23\\v13\\v24\\v25\\v18\\v30\\v148\\v21\\v17\\v97\\v12\\v28\\v18\\v14\\v24\\v25'")())
-if v150 then v150.v201 = 0 end
-end
-else
-v114 = nil
-v181()
-end
-end
-end)
-local v219 = v3:v104(v5("return '\\v227\\v30\\v22\\v22\\v24\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v228 = true
-local v229 = 5
-local v230 = 3.0
-local v231 = {}
-local v232 = v196.v197(v5("return '\\v100\\v17\\v28\\v22\\v22\\v24\\v158\\v14\\v13'")())
-v232.v70 = v5("return '\\v13\\v233\\v100\\v234\\v18\\v7\\v13\\v82\\v95\\v158\\v14\\v13'")()
-v232.v235 = false
-v232.v236 = v206.v236.v237
-v232.v145 = v107:v238(v5("return '\\v92\\v29\\v21\\v95\\v22\\v28\\v158\\v14\\v13'")())
-local v239 = v196.v197(v5("return '\\v20\\v28\\v21\\v19\\v22'")())
-v239.v70 = v5("return '\\v99\\v13\\v12\\v6\\v7\\v94\\v18\\v24\\v7\\v21\\v13\\v24\\v22\\v28'")()
-v239.v199 = v200.v197(0, 300, 1, -60)
-v239.v240 = v200.v197(1, -310, 0, 30)
-v239.v183 = 1
-v239.v184 = true
-v239.v145 = v232
-local v241 = v196.v197(v5("return '\\v26\\v27\\v204\\v13\\v9\\v7\\v204\\v21\\v95\\v18\\v14\\v7'")())
-v241.v242 = v206.v242.v243
-v241.v244 = v203.v197(0, 12)
-v241.v245 = v206.v245.v246
-v241.v247 = v206.v247.v248
-v241.v145 = v239
-local function v249(v250)
-local v208 = v196.v197(v5("return '\\v26\\v27\\v100\\v7\\v28\\v18\\v97\\v22'")())
-v208.v70 = v5("return '\\v94\\v21\\v28\\v25\\v96\\v21\\v28\\v186\\v14\\v22\\v22'")()
-v208.v209 = 2
-v208.v210 = 0.1
-v208.v211 = v206.v211.v212
-v208.v145 = v250
-local v213 = v196.v197(v5("return '\\v26\\v27\\v158\\v28\\v21\\v25\\v13\\v22\\v24\\v7'")())
-v213.v214 = v215.v197({
-v216.v197(0.00, v73.v198(0, 210, 255)),
-v216.v197(0.33, v73.v198(130, 80, 255)),
-v216.v197(0.66, v73.v198(255, 60, 160)),
-v216.v197(1.00, v73.v198(0, 210, 255)),
-})
-v213.v145 = v208
-v115.v116(function()
-local v217 = 0
-while v250.v145 do
-v217 += v115.v152(0.03)
-v213.v218 = (v217 * 180) % 360
-end
-end)
-v115.v116(function()
-while v250.v145 do
-v219:v220(v208, v221.v197(1.2, v206.v222.v223, v206.v224.v225), { v210 = 0.45 }):v226()
-v115.v152(1.2)
-if not v250.v145 then break end
-v219:v220(v208, v221.v197(1.2, v206.v222.v223, v206.v224.v225), { v210 = 0.05 }):v226()
-v115.v152(1.2)
-end
-end)
-end
-local function v251(v252, v253)
-if not v228 then return end
-if #v231 >= v229 then
-local v254 = v162.v255(v231, 1)
-if v254 and v254.v145 then v254:v256() end
-end
-local v250 = v196.v197(v5("return '\\v20\\v28\\v21\\v19\\v22'")())
-v250.v199 = v200.v197(0, 280, 0, 56)
-v250.v187 = v253 and v73.v198(48, 209, 88) or v73.v198(255, 59, 48)
-v250.v183 = 0.75
-v250.v257 = 0
-v250.v184 = true
-v250.v243 = v258()
-v250.v145 = v239
-local v259 = v196.v197(v5("return '\\v26\\v27\\v94\\v18\\v28\\v24\\v22\\v28'")())
-v259.v194 = v203.v197(0, 16)
-v259.v145 = v250
-v249(v250)
-local v260 = v196.v197(v5("return '\\v20\\v28\\v21\\v19\\v22'")())
-v260.v199 = v200.v197(1, 0, 0.5, 0)
-v260.v187 = v73.v198(255, 255, 255)
-v260.v183 = 0.88
-v260.v257 = 0
-v260.v145 = v250
-local v261 = v196.v197(v5("return '\\v26\\v27\\v94\\v18\\v28\\v24\\v22\\v28'")())
-v261.v194 = v203.v197(0, 16)
-v261.v145 = v260
-local v262 = 28
-local v263 = v196.v197(v5("return '\\v227\\v22\\v110\\v7\\v204\\v21\\v15\\v22\\v29'")())
-v263.v199 = v200.v197(0, 280 - v262 - 16, 0, 22)
-v263.v240 = v200.v197(0, v262, 0, 8)
-v263.v183 = 1
-v263.v85 = v253 and v5("return '\\v53\\v264\\v265\\v33\\v266\\v267\\v33\\v36\\v37\\v33\\v268\\v43'")() or v5("return '\\v53\\v264\\v265\\v33\\v266\\v267\\v53\\v269\\v55\\v33\\v45\\v51'")()
-v263.v270 = v73.v198(255, 255, 255)
-v263.v271 = 15
-v263.v272 = v206.v272.v273
-v263.v274 = v206.v274.v275
-v263.v276 = 1
-v263.v145 = v250
-local v277 = v196.v197(v5("return '\\v227\\v22\\v110\\v7\\v204\\v21\\v15\\v22\\v29'")())
-v277.v199 = v200.v197(0, 280 - v262 - 16, 0, 18)
-v277.v240 = v200.v197(0, v262, 0, 30)
-v277.v183 = 1
-v277.v85 = v252
-v277.v270 = v73.v198(230, 230, 230)
-v277.v271 = 13
-v277.v272 = v206.v272.v278
-v277.v274 = v206.v274.v275
-v277.v276 = 1
-v277.v145 = v250
-v250.v240 = v200.v197(0, 300, 0, 0)
-v162.v163(v231, v250)
-v219:v220(v250, v221.v197(0.45, v206.v222.v279, v206.v224.v280), { v240 = v200.v197(0, 0, 0, 0) }):v226()
-v219:v220(v263, v221.v197(0.35), { v276 = 0 }):v226()
-v219:v220(v277, v221.v197(0.35), { v276 = 0 }):v226()
-v115.v281(v230, function()
-v219:v220(v250, v221.v197(0.7, v206.v222.v279, v206.v224.v225), { v240 = v200.v197(0, -300, 0, 0) }):v226()
-v219:v220(v263, v221.v197(0.6), { v276 = 1 }):v226()
-v219:v220(v277, v221.v197(0.6), { v276 = 1 }):v226()
-v115.v281(0.8, function()
-if v250 and v250.v145 then v250:v256() end
-for v282, v283 in v167(v231) do
-if v283 == v250 then v162.v255(v231, v282); break end
-end
-end)
-end)
-end
-v106.v284:v285(function(v286) if v286 ~= v107 then v251(v286.v70, true) end end)
-v106.v287:v285(function(v286) if v286 ~= v107 then v251(v286.v70, false) end end)
-v115.v288(function()
-for v165, v286 in v167(v106:v289()) do if v286 ~= v107 then v251(v286.v70, true) end end
-end)
-local function v290(v291, v292)
-v1:v133({ v134 = v5("return '\\v33\\v36\\v37\\v38\\v39\\v39\\v293\\v294\\v295'")(), v137 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v33\\v36\\v37\\v38\\v39\\v39\\v32'")() .. v291 .. v5("return '\\v16\\v16\\v16'")(), v91 = v5("return '\\v29\\v18\\v21\\v25\\v22\\v28'")(), v144 = 2 })
-v115.v116(function()
-local v159, v296 = v117(function() return v3:v4(v292, true) end)
-if not v159 then
-v1:v133({ v134 = v5("return '\\v293\\v294\\v297\\v38\\v39\\v39\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v291 .. v5("return '\\v32\\v135\\v136\\v65\\v38\\v47\\v47\\v10\\v32'")() .. v122(v296), v91 = v5("return '\\v110'")(), v144 = 5 })
-return
-end
-local v298, v299 = v117(function() v2(v296)() end)
-if v298 then
-v1:v133({ v134 = v5("return '\\v33\\v36\\v37\\v38\\v39\\v39\\v49\\v57\\v300\\v33\\v36\\v52'")(), v137 = v291 .. v5("return '\\v32\\v33\\v48\\v154\\v33\\v36\\v37\\v38\\v39\\v39'")(), v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 3 })
-else
-v1:v133({ v134 = v5("return '\\v49\\v62\\v63\\v38\\v64\\v46\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v291 .. v5("return '\\v32\\v135\\v136\\v65\\v38\\v47\\v47\\v10\\v32'")() .. v122(v299), v91 = v5("return '\\v110'")(), v144 = 5 })
-end
-end)
-end
-v1:v301({
-v134 = v5("return '\\v33\\v302\\v155\\v53\\v45\\v303\\v33\\v300\\v57\\v38\\v141\\v140\\v49\\v56\\v304'")(),
-v91 = v5("return '\\v13\\v24\\v82\\v18'")(),
-v137 = v5("return '\\v53\\v68\\v305\\v33\\v143\\v55\\v49\\v62\\v63\\v38\\v64\\v46\\v38\\v306\\v59\\v33\\v268\\v43\\v38\\v141\\v140\\v49\\v56\\v304\\v293\\v294\\v55\\v53\\v139\\v46\\v135\\v303\\v61\\v307\\v24\\v293\\v39\\v56\\v38\\v51\\v268\\v44\\v45\\v140\\v49\\v269\\v302\\v32\\v308\\v32\\v33\\v309\\v68\\v293\\v294\\v264\\v38\\v51\\v268\\v44\\v45\\v140\\v33\\v306\\v112\\v49\\v141\\v309\\v33\\v302\\v155\\v33\\v295\\v310\\v311\\v33\\v312\\v265\\v313'")(),
-v314 = {
-{
-v134 = v5("return '\\v135\\v51\\v51\\v33\\v143\\v34'")(),
-v315 = function() end,
-v316 = v5("return '\\v227\\v22\\v28\\v7\\v13\\v21\\v28\\v95'")(),
-},
-{
-v134 = v5("return '\\v49\\v62\\v63\\v38\\v64\\v46'")(),
-v91 = v5("return '\\v21\\v28\\v28\\v18\\v30\\v317\\v28\\v13\\v12\\v6\\v7'")(),
-v315 = function()
-local v318 = v1:v319({
-v134 = v5("return '\\v33\\v302\\v155\\v53\\v45\\v303\\v33\\v300\\v57\\v38\\v141\\v140\\v49\\v56\\v304'")(),
-v91 = v5("return '\\v25\\v18\\v18\\v28\\v317\\v18\\v8\\v22\\v24'")(),
-v320 = v5("return '\\v49\\v269\\v302'")(),
-v321 = false,
-})
-v318:v322(true)
-local v323 = v318:v324({ v134 = v5("return '\\v33\\v268\\v304\\v33\\v54\\v36'")(), v91 = v5("return '\\v19\\v22\\v12\\v21\\v8\\v6\\v18\\v24\\v22'")(), v325 = false })
-v323:v326({ v134 = v5("return '\\v49\\v304\\v61\\v38\\v306\\v264\\v293\\v39\\v306\\v53\\v136\\v66'")(), v327 = v5("return '\\v49\\v56\\v304\\v38\\v141\\v140\\v49\\v56\\v304\\v53\\v136\\v41\\v32\\v49\\v269\\v302\\v32\\v33\\v45\\v51\\v33\\v309\\v54\\v44\\v45\\v46\\v293\\v55\\v268\\v293\\v142\\v59\\v33\\v295\\v269\\v293\\v305\\v37\\v293\\v34\\v40\\v49\\v312\\v328\\v293\\v39\\v306\\v53\\v136\\v66\\v67\\v51\\v68'")() })
-v323:v326({
-v134 = v5("return '\\v53\\v264\\v265\\v33\\v266\\v267\\v293\\v306\\v64\\v49\\v328\\v47'")(),
-v327 = v5("return '\\v53\\v136\\v66\\v49\\v57\\v48\\v33\\v300\\v60\\v10\\v32'")() .. v107.v70 .. v5("return '\\v307\\v24\\v49\\v310\\v142\\v53\\v40\\v34\\v33\\v300\\v60\\v53\\v63\\v155\\v10\\v32'")() .. v107.v329 .. v5("return '\\v307\\v24\\v38\\v42\\v269\\v33\\v309\\v48\\v33\\v305\\v42\\v135\\v142\\v141\\v10\\v32'")() .. v107.v330 .. v5("return '\\v32\\v33\\v40\\v265\\v307\\v24\\v53\\v136\\v66\\v49\\v57\\v48\\v27\\v102\\v10\\v32'")() .. v107.v331,
-v151 = v5("return '\\v14\\v9\\v22\\v28'")(),
-v332 = 20
-})
-local v333 = v318:v324({ v134 = v5("return '\\v293\\v294\\v55\\v38\\v269\\v328'")(), v91 = v5("return '\\v6\\v18\\v14\\v9\\v22'")(), v325 = false })
-v333:v326({ v134 = v5("return '\\v293\\v39\\v56\\v38\\v51\\v268\\v293\\v306\\v64\\v49\\v328\\v47'")(), v327 = v5("return '\\v293\\v39\\v56\\v38\\v51\\v268\\v44\\v45\\v140\\v49\\v269\\v302\\v307\\v24\\v33\\v309\\v68\\v293\\v294\\v264\\v38\\v51\\v268\\v44\\v45\\v140\\v33\\v306\\v112\\v49\\v141\\v309\\v33\\v302\\v155\\v33\\v295\\v310\\v311\\v33\\v312\\v265\\v313'")() })
-v333:v334({
-v134 = v5("return '\\v33\\v57\\v143\\v49\\v60\\v61\\v38\\v112\\v46\\v49\\v65\\v47\\v33\\v59\\v142\\v53\\v62\\v143'")(),
-v335 = v111,
-v336 = v111[1],
-v315 = function(v337)
-for v282, v291 in v167(v111) do
-if v291 == v337 then
-v131(v109[v282])
-break
-end
-end
-end
-})
-v333:v338({
-v134 = v5("return '\\v38\\v143\\v339\\v33\\v266\\v140\\v293\\v305\\v62\\v38\\v112\\v46\\v49\\v65\\v47\\v33\\v59\\v142\\v53\\v62\\v143\\v32\\v27\\v102'")(),
-v327 = v5("return '\\v38\\v142\\v35\\v33\\v268\\v43\\v33\\v59\\v142\\v53\\v62\\v143\\v32\\v27\\v102\\v32\\v33\\v300\\v264\\v49\\v46\\v62\\v33\\v59\\v340\\v38\\v39\\v269\\v33\\v34\\v136\\v53\\v136\\v66'")(),
-v91 = v5("return '\\v13\\v19\\v21\\v12\\v22'")(),
-v315 = function(v341)
-if v341 and v341 ~= v5("return ''")() then
-v131(v341)
-end
-end
-})
-v333:v88({
-v134 = v5("return '\\v33\\v34\\v136\\v53\\v136\\v66\\v32\\v11\\v32\\v33\\v57\\v48\\v49\\v58\\v155\\v38\\v112\\v46\\v49\\v65\\v47'")(),
-v327 = v5("return '\\v135\\v143\\v60\\v49\\v58\\v155\\v33\\v36\\v37\\v38\\v39\\v39\\v33\\v39\\v35\\v33\\v62\\v60\\v38\\v112\\v46\\v49\\v65\\v47\\v33\\v59\\v142\\v53\\v62\\v143'")(),
-v91 = v5("return '\\v28\\v22\\v82\\v28\\v22\\v9\\v6\\v317\\v17\\v30'")(),
-v315 = function() v131(v113) end
-})
-local v342 = v318:v324({ v134 = v5("return '\\v38\\v306\\v59\\v33\\v143\\v34\\v49\\v309\\v300\\v53\\v40\\v34'")(), v91 = v5("return '\\v15\\v22\\v29\\v29'")(), v325 = false })
-v342:v343({
-v134 = v5("return '\\v33\\v300\\v47\\v53\\v136\\v66\\v53\\v264\\v265\\v33\\v266\\v267\\v38\\v306\\v59\\v33\\v143\\v34\\v49\\v309\\v300\\v53\\v40\\v34'")(),
-v336 = true,
-v315 = function(v344) v228 = v344; v232.v345 = v344 end
-})
-v342:v346({
-v134 = v5("return '\\v49\\v309\\v300\\v53\\v40\\v34\\v33\\v328\\v56\\v53\\v139\\v65\\v49\\v138\\v267\\v135\\v138\\v42\\v44\\v45\\v57\\v53\\v63\\v347\\v44\\v45\\v62'")(),
-v336 = { v348 = 1, v349 = 8, v350 = 3 },
-v315 = function(v344) v230 = v344 end
-})
-v342:v346({
-v134 = v5("return '\\v49\\v56\\v51\\v33\\v40\\v63\\v33\\v300\\v46\\v49\\v138\\v267\\v49\\v310\\v142\\v53\\v40\\v34\\v49\\v303\\v64\\v49\\v139\\v155'")(),
-v336 = { v348 = 1, v349 = 10, v350 = 5 },
-v315 = function(v344) v229 = v351.v352(v344) end
-})
-v342:v353({ v134 = v5("return '\\v49\\v312\\v297\\v38\\v47\\v139'")() })
-v342:v88({ v134 = v5("return '\\v49\\v312\\v297\\v38\\v47\\v139\\v32\\v317\\v32\\v53\\v264\\v265\\v33\\v266\\v267\\v33\\v36\\v37\\v33\\v268\\v43'")(), v315 = function() v251(v5("return '\\v227\\v22\\v9\\v7\\v92\\v29\\v21\\v95\\v22\\v28\\v354\\v355\\v18\\v13\\v24'")(), true) end })
-v342:v88({ v134 = v5("return '\\v49\\v312\\v297\\v38\\v47\\v139\\v32\\v317\\v32\\v53\\v264\\v265\\v33\\v266\\v267\\v53\\v269\\v55\\v33\\v45\\v51'")(), v315 = function() v251(v5("return '\\v227\\v22\\v9\\v7\\v92\\v29\\v21\\v95\\v22\\v28\\v354\\v204\\v22\\v21\\v105\\v22'")(), false) end })
-local v356 = v318:v324({ v134 = v5("return '\\v38\\v141\\v140\\v49\\v56\\v304\\v33\\v34\\v35'")(), v91 = v5("return '\\v17\\v18\\v25\\v22'")(), v325 = false })
-v356:v353({ v134 = v5("return '\\v71\\v22\\v28\\v18\\v32\\v38\\v141\\v140\\v49\\v56\\v304\\v33\\v34\\v35'")() })
-v356:v88({ v134 = v5("return '\\v357\\v58\\v267\\v32\\v33\\v36\\v37\\v38\\v39\\v39\\v32\\v38\\v267\\v268\\v135\\v358\\v310\\v135\\v51\\v52\\v38\\v48\\v54\\v38\\v51\\v268'")(), v315 = function() v290(v5("return '\\v38\\v267\\v268\\v135\\v358\\v310\\v135\\v51\\v52\\v38\\v48\\v54\\v38\\v51\\v268'")(), v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v28\\v21\\v30\\v16\\v12\\v13\\v7\\v6\\v14\\v15\\v14\\v9\\v22\\v28\\v17\\v18\\v24\\v7\\v22\\v24\\v7\\v16\\v17\\v18\\v19\\v11\\v30\\v30\\v25\\v93\\v24\\v12\\v77\\v359\\v93\\v93\\v317\\v21\\v28\\v7\\v11\\v317\\v11\\v19\\v21\\v13\\v24\\v11\\v124\\v101\\v87\\v124\\v148\\v93\\v124\\v87\\v90\\v124\\v101\\v76\\v124\\v71\\v148\\v124\\v76\\v87\\v124\\v101\\v76\\v124\\v87\\v79\\v124\\v76\\v20\\v124\\v101\\v87\\v124\\v148\\v89\\v124\\v76\\v81\\v124\\v101\\v87\\v124\\v87\\v79\\v124\\v87\\v90\\v16\\v29\\v14\\v21'")()) end })
-v356:v88({ v134 = v5("return '\\v357\\v58\\v267\\v32\\v33\\v36\\v37\\v38\\v39\\v39\\v32\\v76\\v76\\v33\\v40\\v56\\v38\\v141\\v140\\v49\\v56\\v304'")(), v315 = function() v290(v5("return '\\v76\\v76\\v33\\v40\\v56'")(), v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v28\\v21\\v30\\v16\\v12\\v13\\v7\\v6\\v14\\v15\\v14\\v9\\v22\\v28\\v17\\v18\\v24\\v7\\v22\\v24\\v7\\v16\\v17\\v18\\v19\\v11\\v30\\v30\\v25\\v93\\v24\\v12\\v77\\v359\\v93\\v93\\v317\\v21\\v28\\v7\\v11\\v317\\v11\\v84\\v87\\v21\\v21\\v90\\v81\\v78\\v21\\v90\\v93\\v81\\v25\\v25\\v84\\v78\\v78\\v22\\v84\\v15\\v89\\v90\\v17\\v93\\v79\\v22\\v77\\v81\\v81\\v76\\v89\\v22\\v78\\v87\\v78\\v82\\v17\\v84\\v81\\v21\\v21\\v11\\v76\\v76\\v124\\v77\\v79\\v124\\v101\\v90\\v124\\v71\\v78\\v124\\v76\\v94\\v16\\v29\\v14\\v21'")()) end })
-v356:v353({ v134 = v5("return '\\v33\\v268\\v267\\v293\\v55\\v58\\v38\\v141\\v140\\v49\\v56\\v304\\v33\\v34\\v35'")() })
-v356:v88({ v134 = v5("return '\\v357\\v58\\v267\\v32\\v33\\v36\\v37\\v38\\v39\\v39\\v32\\v33\\v328\\v48\\v293\\v294\\v51\\v293\\v294\\v339\\v38\\v59\\v297\\v32\\v311\\v227\\v360\\v32\\v100\\v17\\v28\\v13\\v8\\v7\\v313'")(), v315 = function() v290(v5("return '\\v33\\v328\\v48\\v293\\v294\\v51\\v293\\v294\\v339\\v38\\v59\\v297'")(), v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v28\\v21\\v30\\v16\\v12\\v13\\v7\\v6\\v14\\v15\\v14\\v9\\v22\\v28\\v17\\v18\\v24\\v7\\v22\\v24\\v7\\v16\\v17\\v18\\v19\\v11\\v355\\v9\\v361\\v15\\v93\\v93\\v93\\v11\\v27\\v7\\v22\\v19\\v11\\v28\\v22\\v82\\v9\\v11\\v6\\v22\\v21\\v25\\v9\\v11\\v19\\v21\\v13\\v24\\v11\\v100\\v7\\v22\\v21\\v29\\v317\\v101\\v12\\v12\\v9'")()) end })
-local v362 = v318:v324({ v134 = v5("return '\\v38\\v266\\v142\\v53\\v39\\v266'")(), v91 = v5("return '\\v9\\v22\\v7\\v7\\v13\\v24\\v12\\v9'")(), v325 = false })
-v362:v343({
-v134 = v5("return '\\v33\\v57\\v143\\v49\\v60\\v61\\v135\\v51\\v309\\v49\\v310\\v264\\v53\\v339\\v138\\v33\\v309\\v50'")(),
-v315 = function(v363) v318:v322(v363) end,
-v336 = v1:v364()
-})
-v362:v334({
-v134 = v5("return '\\v33\\v57\\v143\\v49\\v60\\v61\\v293\\v294\\v55\\v135\\v61\\v310'")(),
-v335 = { v5("return '\\v102\\v21\\v28\\v97'")(), v5("return '\\v71\\v19\\v15\\v22\\v28'")(), v5("return '\\v92\\v29\\v21\\v24\\v7'")(), v5("return '\\v94\\v18\\v7\\v7\\v18\\v24\\v32\\v94\\v21\\v24\\v25\\v95'")(), v5("return '\\v96\\v18\\v24\\v18\\v97\\v21\\v13\\v32\\v92\\v28\\v18'")(), v5("return '\\v94\\v28\\v13\\v19\\v9\\v18\\v24'")(), v5("return '\\v98\\v13\\v18\\v29\\v22\\v7'")(), v5("return '\\v96\\v13\\v25\\v24\\v13\\v12\\v6\\v7'")(), v5("return '\\v99\\v18\\v9\\v22'")(), v5("return '\\v96\\v22\\v29\\v29\\v18\\v30\\v9\\v13'")(), v5("return '\\v100\\v97\\v95'")(), v5("return '\\v27\\v24\\v25\\v13\\v12\\v18'")(), v5("return '\\v99\\v22\\v25'")(), v5("return '\\v101\\v19\\v22\\v28\\v21\\v29\\v25'")() },
-v336 = v5("return '\\v102\\v21\\v28\\v97'")(),
-v315 = function(v337) v1:v365(v337); v1:v366() end
-})
-v362:v367()
-v362:v88({
-v134 = v5("return '\\v135\\v143\\v60\\v49\\v58\\v155\\v33\\v36\\v37\\v33\\v268\\v43\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v327 = v5("return '\\v38\\v143\\v339\\v33\\v36\\v66\\v38\\v47\\v55\\v33\\v309\\v58\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102\\v32\\v33\\v305\\v267\\v135\\v143\\v60\\v49\\v58\\v155\\v33\\v36\\v37\\v33\\v268\\v43'")(),
-v91 = v5("return '\\v28\\v22\\v82\\v28\\v22\\v9\\v6\\v317\\v17\\v30'")(),
-v315 = function()
-local v368 = v3.v369
-if v368 and v368 ~= v5("return ''")() then
-local v298, v299 = v117(function() v3:v104(v5("return '\\v227\\v22\\v29\\v22\\v8\\v18\\v28\\v7\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")()):v370(v3.v371, v368, v107) end)
-if v298 then v1:v133({ v134 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v135\\v143\\v60\\v38\\v306\\v340'")(), v137 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v38\\v306\\v136\\v33\\v59\\v340\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v16\\v16\\v16'")(), v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 3 })
-else v1:v133({ v134 = v5("return '\\v135\\v143\\v60\\v38\\v306\\v340\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v49\\v138\\v37\\v49\\v372\\v139\\v38\\v306\\v136\\v33\\v59\\v340\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v67\\v51\\v68'")(), v91 = v5("return '\\v110'")(), v144 = 5 }) end
-else
-v1:v133({ v134 = v5("return '\\v135\\v143\\v60\\v38\\v306\\v340\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v49\\v138\\v37\\v49\\v372\\v139\\v38\\v264\\v48\\v33\\v309\\v58\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102'")(), v91 = v5("return '\\v110'")(), v144 = 3 })
-end
-end
-})
-v362:v367()
-v362:v88({
-v134 = v5("return '\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v38\\v48\\v372\\v38\\v48\\v112'")(),
-v327 = v5("return '\\v33\\v47\\v55\\v49\\v62\\v142\\v293\\v294\\v51\\v293\\v294\\v339\\v49\\v58\\v155\\v53\\v140\\v141\\v135\\v140\\v309\\v49\\v56\\v34\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v91 = v5("return '\\v12\\v29\\v18\\v15\\v22'")(),
-v315 = function()
-local v373 = v3:v104(v5("return '\\v227\\v22\\v29\\v22\\v8\\v18\\v28\\v7\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v374 = v3:v104(v5("return '\\v149\\v7\\v7\\v8\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v298, v375 = v117(function() return v374:v376(v3:v4(v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v12\\v21\\v19\\v22\\v9\\v16\\v28\\v18\\v15\\v29\\v18\\v110\\v16\\v17\\v18\\v19\\v11\\v105\\v81\\v11\\v12\\v21\\v19\\v22\\v9\\v11'")() .. v3.v371 .. v5("return '\\v11\\v9\\v22\\v28\\v105\\v22\\v28\\v9\\v11\\v92\\v14\\v15\\v29\\v13\\v17\\v377\\v9\\v18\\v28\\v7\\v233\\v28\\v25\\v22\\v28\\v378\\v71\\v9\\v17\\v379\\v29\\v13\\v19\\v13\\v7\\v378\\v81\\v79\\v79'")())) end)
-if v298 and v375 and v375.v380 and #v375.v380 > 0 then
-local v381 = v375.v380[v351.v382(1, #v375.v380)]
-v373:v370(v3.v371, v381.v120, v107)
-else
-v1:v133({ v134 = v5("return '\\v38\\v48\\v372\\v38\\v48\\v112\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v49\\v154\\v64\\v49\\v56\\v62\\v49\\v62\\v142\\v33\\v57\\v155\\v33\\v309\\v47\\v53\\v136\\v66\\v53\\v140\\v141\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(), v91 = v5("return '\\v110'")() })
-end
-end
-})
-v362:v367()
-v362:v88({
-v134 = v5("return '\\v33\\v36\\v37\\v33\\v268\\v43\\v293\\v34\\v34\\v33\\v155\\v54\\v53\\v140\\v141\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v327 = v5("return '\\v38\\v143\\v339\\v33\\v36\\v66\\v33\\v47\\v55\\v49\\v62\\v142\\v33\\v305\\v267\\v33\\v36\\v37\\v33\\v268\\v43\\v33\\v39\\v35\\v33\\v62\\v60\\v33\\v56\\v66\\v53\\v34\\v306\\v293\\v34\\v34\\v49\\v139\\v155\\v49\\v56\\v51\\v33\\v155\\v54\\v53\\v140\\v141\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v91 = v5("return '\\v14\\v9\\v22\\v28\\v9'")(),
-v315 = function()
-local v373 = v3:v104(v5("return '\\v227\\v22\\v29\\v22\\v8\\v18\\v28\\v7\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v374 = v3:v104(v5("return '\\v149\\v7\\v7\\v8\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v298, v375 = v117(function() return v374:v376(v3:v4(v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v12\\v21\\v19\\v22\\v9\\v16\\v28\\v18\\v15\\v29\\v18\\v110\\v16\\v17\\v18\\v19\\v11\\v105\\v81\\v11\\v12\\v21\\v19\\v22\\v9\\v11'")() .. v3.v371 .. v5("return '\\v11\\v9\\v22\\v28\\v105\\v22\\v28\\v9\\v11\\v92\\v14\\v15\\v29\\v13\\v17\\v377\\v9\\v18\\v28\\v7\\v233\\v28\\v25\\v22\\v28\\v378\\v71\\v9\\v17\\v379\\v29\\v13\\v19\\v13\\v7\\v378\\v81\\v79\\v79'")())) end)
-if v298 and v375 and v375.v380 and #v375.v380 > 0 then
-v162.v383(v375.v380, function(v384, v385) return v384.v386 < v385.v386 end)
-local v387 = v375.v380[1]
-v373:v370(v3.v371, v387.v120, v107)
-v1:v133({ v134 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v38\\v48\\v372\\v38\\v48\\v112'")(), v137 = v5("return '\\v33\\v39\\v35\\v33\\v62\\v60\\v293\\v34\\v34\\v49\\v139\\v155\\v44\\v45\\v140'")() .. v387.v386, v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 3 })
-else
-v1:v133({ v134 = v5("return '\\v38\\v48\\v372\\v38\\v48\\v112\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v49\\v154\\v64\\v49\\v56\\v62\\v49\\v62\\v142\\v33\\v57\\v155\\v33\\v309\\v47\\v53\\v136\\v66\\v53\\v140\\v141\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(), v91 = v5("return '\\v110'")() })
-end
-end
-})
-v362:v367()
-v362:v88({
-v134 = v5("return '\\v33\\v40\\v60\\v33\\v57\\v267\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102'")(),
-v327 = v5("return '\\v33\\v155\\v302\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v53\\v140\\v141\\v32\\v27\\v102\\v32\\v33\\v40\\v60\\v33\\v57\\v267\\v33\\v57\\v155\\v33\\v62\\v339\\v38\\v42\\v42\\v49\\v303\\v306'")(),
-v91 = v5("return '\\v17\\v18\\v8\\v95'")(),
-v315 = function()
-if v3.v369 and v3.v369 ~= v5("return ''")() then
-v388(v3.v369)
-v1:v133({ v134 = v5("return '\\v33\\v40\\v60\\v33\\v57\\v267\\v49\\v57\\v300\\v33\\v36\\v52'")(), v137 = v5("return '\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102\\v32\\v33\\v48\\v154\\v33\\v40\\v60\\v33\\v57\\v267'")(), v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 3 })
-else
-v1:v133({ v134 = v5("return '\\v33\\v40\\v60\\v33\\v57\\v267\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v49\\v138\\v37\\v49\\v372\\v139\\v38\\v264\\v48\\v33\\v309\\v58\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102'")(), v91 = v5("return '\\v110'")(), v144 = 3 })
-end
-end
-})
-v362:v367()
-local v389 = v5("return ''")()
-v362:v338({
-v134 = v5("return '\\v38\\v142\\v35\\v33\\v268\\v43\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102'")(),
-v327 = v5("return '\\v53\\v154\\v310\\v38\\v42\\v42\\v293\\v39\\v37\\v49\\v112\\v372\\v33\\v36\\v37\\v33\\v268\\v43\\v53\\v140\\v141\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v355\\v18\\v15\\v27\\v25'")(),
-v91 = v5("return '\\v6\\v21\\v9\\v6'")(),
-v315 = function(v344) v389 = v344 end
-})
-v362:v367()
-v362:v88({
-v134 = v5("return '\\v33\\v36\\v37\\v33\\v268\\v43\\v53\\v62\\v305\\v33\\v266\\v140\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v327 = v5("return '\\v293\\v39\\v306\\v53\\v136\\v66\\v293\\v294\\v36\\v49\\v58\\v305\\v38\\v142\\v35\\v33\\v268\\v43\\v49\\v64\\v302\\v293\\v294\\v295\\v53\\v140\\v141\\v32\\v27\\v102\\v32\\v33\\v36\\v37\\v33\\v268\\v43\\v33\\v47\\v305\\v33\\v34\\v136\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v91 = v5("return '\\v29\\v18\\v12\\v317\\v13\\v24'")(),
-v315 = function()
-if not v389 or v389 == v5("return ''")() then
-v1:v133({ v134 = v5("return '\\v33\\v36\\v37\\v33\\v268\\v43\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v38\\v47\\v48\\v33\\v268\\v57\\v53\\v154\\v310\\v38\\v42\\v42\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102'")(), v91 = v5("return '\\v21\\v29\\v22\\v28\\v7\\v317\\v7\\v28\\v13\\v21\\v24\\v12\\v29\\v22'")(), v144 = 3 })
-return
-end
-local v373 = v3:v104(v5("return '\\v227\\v22\\v29\\v22\\v8\\v18\\v28\\v7\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v298, v299 = v117(function() v373:v370(v3.v371, v389, v107) end)
-if v298 then v1:v133({ v134 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v293\\v45\\v37\\v135\\v51\\v328'")(), v137 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v33\\v36\\v37\\v33\\v268\\v43\\v10\\v32'")() .. v389, v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 3 })
-else v1:v133({ v134 = v5("return '\\v33\\v36\\v37\\v33\\v268\\v43\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v122(v299), v91 = v5("return '\\v110'")(), v144 = 5 }) end
-end
-})
-v115.v281(0.5, function()
-v181()
-end)
-end,
-v316 = v5("return '\\v92\\v28\\v13\\v19\\v21\\v28\\v95'")(),
-}
-}
-})
-local v1 = v2(v3:v4(v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v12\\v13\\v7\\v6\\v14\\v15\\v16\\v17\\v18\\v19\\v11\\v20\\v18\\v18\\v7\\v21\\v12\\v22\\v9\\v14\\v9\\v11\\v23\\v13\\v24\\v25\\v26\\v27\\v11\\v28\\v22\\v29\\v22\\v21\\v9\\v22\\v9\\v11\\v29\\v21\\v7\\v22\\v9\\v7\\v11\\v25\\v18\\v30\\v24\\v29\\v18\\v21\\v25\\v11\\v19\\v21\\v13\\v24\\v16\\v29\\v14\\v21'")()))()
-if not v1 then
-v31(v5("return '\\v23\\v13\\v24\\v25\\v26\\v27\\v32\\v33\\v34\\v35\\v33\\v36\\v37\\v38\\v39\\v39\\v33\\v40\\v41\\v38\\v42\\v43\\v44\\v45\\v46\\v38\\v47\\v48\\v49\\v50\\v51\\v49\\v52\\v43\\v53\\v39\\v54\\v53\\v55\\v56\\v49\\v57\\v58\\v49\\v59\\v42\\v49\\v60\\v61\\v49\\v62\\v63\\v38\\v64\\v46\\v33\\v65\\v66\\v67\\v51\\v68'")())
-return
-end
-v1:v69({ v70 = v5("return '\\v71\\v19\\v15\\v22\\v28'")(), v72 = v73.v74(v5("return '\\v75\\v76\\v77\\v78\\v79\\v79\\v22'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v17\\v81\\v78\\v79\\v82'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v17\\v25\\v84\\v78\\v25'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v82\\v82\\v15\\v22\\v15'")()), v86 = v73.v74(v5("return '\\v75\\v21\\v87\\v21\\v77\\v76\\v22'")()), v88 = v73.v74(v5("return '\\v75\\v89\\v87\\v84\\v90\\v79\\v82'")()), v91 = v73.v74(v5("return '\\v75\\v82\\v15\\v15\\v82\\v77\\v78'")()) })
-v1:v69({ v70 = v5("return '\\v92\\v29\\v21\\v24\\v7'")(), v72 = v73.v74(v5("return '\\v75\\v81\\v93\\v93\\v90\\v84\\v78'")()), v80 = v73.v74(v5("return '\\v75\\v79\\v82\\v81\\v82\\v81\\v89'")()), v83 = v73.v74(v5("return '\\v75\\v78\\v21\\v25\\v22\\v87\\v79'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v79\\v82\\v25\\v82\\v78'")()), v86 = v73.v74(v5("return '\\v75\\v87\\v93\\v22\\v82\\v21\\v17'")()), v88 = v73.v74(v5("return '\\v75\\v81\\v78\\v90\\v84\\v77\\v25'")()), v91 = v73.v74(v5("return '\\v75\\v77\\v77\\v17\\v90\\v90\\v22'")()) })
-v1:v69({ v70 = v5("return '\\v94\\v18\\v7\\v7\\v18\\v24\\v32\\v94\\v21\\v24\\v25\\v95'")(), v72 = v73.v74(v5("return '\\v75\\v89\\v22\\v77\\v77\\v17\\v22'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v21\\v81\\v79\\v77\\v93'")()), v83 = v73.v74(v5("return '\\v75\\v22\\v87\\v89\\v76\\v82\\v76'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v21\\v82\\v90\\v82\\v82'")()), v86 = v73.v74(v5("return '\\v75\\v17\\v78\\v15\\v90\\v82\\v25'")()), v88 = v73.v74(v5("return '\\v75\\v93\\v15\\v77\\v81\\v21\\v87'")()), v91 = v73.v74(v5("return '\\v75\\v25\\v76\\v78\\v93\\v22\\v82'")()) })
-v1:v69({ v70 = v5("return '\\v96\\v18\\v24\\v18\\v97\\v21\\v13\\v32\\v92\\v28\\v18'")(), v72 = v73.v74(v5("return '\\v75\\v77\\v89\\v77\\v87\\v77\\v77'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v22\\v81\\v82\\v81\\v17'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v87\\v82\\v87\\v82\\v77'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v89\\v82\\v89\\v82\\v89'")()), v86 = v73.v74(v5("return '\\v75\\v76\\v79\\v76\\v79\\v87\\v21'")()), v88 = v73.v74(v5("return '\\v75\\v84\\v22\\v84\\v25\\v84\\v77'")()), v91 = v73.v74(v5("return '\\v75\\v21\\v93\\v22\\v77\\v77\\v22'")()) })
-v1:v69({ v70 = v5("return '\\v94\\v28\\v13\\v19\\v9\\v18\\v24'")(), v72 = v73.v74(v5("return '\\v75\\v76\\v76\\v81\\v15\\v81\\v15'")()), v80 = v73.v74(v5("return '\\v75\\v77\\v79\\v79\\v17\\v79\\v17'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v87\\v89\\v81\\v89\\v81'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v22\\v82\\v77\\v82\\v77'")()), v86 = v73.v74(v5("return '\\v75\\v82\\v17\\v21\\v90\\v21\\v90'")()), v88 = v73.v74(v5("return '\\v75\\v89\\v82\\v81\\v25\\v81\\v25'")()), v91 = v73.v74(v5("return '\\v75\\v22\\v82\\v78\\v78\\v78\\v78'")()) })
-v1:v69({ v70 = v5("return '\\v98\\v13\\v18\\v29\\v22\\v7'")(), v72 = v73.v74(v5("return '\\v75\\v78\\v17\\v81\\v25\\v76\\v90'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v89\\v81\\v79\\v77\\v15'")()), v83 = v73.v74(v5("return '\\v75\\v21\\v89\\v87\\v15\\v82\\v21'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v90\\v82\\v84\\v82\\v82'")()), v86 = v73.v74(v5("return '\\v75\\v17\\v78\\v15\\v90\\v82\\v25'")()), v88 = v73.v74(v5("return '\\v75\\v90\\v15\\v77\\v81\\v15\\v93'")()), v91 = v73.v74(v5("return '\\v75\\v87\\v15\\v90\\v17\\v82\\v93'")()) })
-v1:v69({ v70 = v5("return '\\v96\\v13\\v25\\v24\\v13\\v12\\v6\\v7'")(), v72 = v73.v74(v5("return '\\v75\\v81\\v22\\v84\\v21\\v87\\v21'")()), v80 = v73.v74(v5("return '\\v75\\v79\\v82\\v81\\v89\\v77\\v21'")()), v83 = v73.v74(v5("return '\\v75\\v76\\v84\\v17\\v90\\v82\\v25'")()), v85 = v73.v74(v5("return '\\v75\\v22\\v82\\v82\\v93\\v82\\v82'")()), v86 = v73.v74(v5("return '\\v75\\v76\\v78\\v21\\v84\\v15\\v87'")()), v88 = v73.v74(v5("return '\\v75\\v81\\v22\\v78\\v79\\v21\\v82'")()), v91 = v73.v74(v5("return '\\v75\\v84\\v15\\v87\\v77\\v82\\v93'")()) })
-v1:v69({ v70 = v5("return '\\v99\\v18\\v9\\v22'")(), v72 = v73.v74(v5("return '\\v75\\v87\\v87\\v81\\v84\\v84\\v89'")()), v80 = v73.v74(v5("return '\\v75\\v77\\v84\\v79\\v22\\v81\\v93'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v25\\v21\\v78\\v21\\v82'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v82\\v82\\v81\\v82\\v77'")()), v86 = v73.v74(v5("return '\\v75\\v82\\v25\\v21\\v78\\v21\\v82'")()), v88 = v73.v74(v5("return '\\v75\\v76\\v82\\v81\\v77\\v84\\v76'")()), v91 = v73.v74(v5("return '\\v75\\v82\\v78\\v84\\v82\\v90\\v22'")()) })
-v1:v69({ v70 = v5("return '\\v96\\v22\\v29\\v29\\v18\\v30\\v9\\v13'")(), v72 = v73.v74(v5("return '\\v75\\v89\\v87\\v84\\v90\\v79\\v82'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v17\\v81\\v77\\v79\\v21'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v17\\v25\\v84\\v78\\v25'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v82\\v82\\v15\\v22\\v15'")()), v86 = v73.v74(v5("return '\\v75\\v21\\v87\\v21\\v77\\v76\\v22'")()), v88 = v73.v74(v5("return '\\v75\\v89\\v81\\v84\\v82\\v81\\v77'")()), v91 = v73.v74(v5("return '\\v75\\v82\\v15\\v15\\v82\\v77\\v78'")()) })
-v1:v69({ v70 = v5("return '\\v100\\v97\\v95'")(), v72 = v73.v74(v5("return '\\v75\\v79\\v22\\v89\\v78\\v76\\v79'")()), v80 = v73.v74(v5("return '\\v75\\v79\\v17\\v81\\v25\\v77\\v78'")()), v83 = v73.v74(v5("return '\\v75\\v90\\v22\\v22\\v21\\v25\\v78'")()), v85 = v73.v74(v5("return '\\v75\\v22\\v17\\v82\\v22\\v82\\v82'")()), v86 = v73.v74(v5("return '\\v75\\v90\\v22\\v22\\v21\\v25\\v78'")()), v88 = v73.v74(v5("return '\\v75\\v81\\v90\\v90\\v22\\v89\\v90'")()), v91 = v73.v74(v5("return '\\v75\\v81\\v78\\v15\\v87\\v21\\v93'")()) })
-v1:v69({ v70 = v5("return '\\v27\\v24\\v25\\v13\\v12\\v18'")(), v72 = v73.v74(v5("return '\\v75\\v84\\v81\\v77\\v22\\v87\\v81'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v77\\v81\\v78\\v77\\v25'")()), v83 = v73.v74(v5("return '\\v75\\v21\\v90\\v15\\v78\\v82\\v17'")()), v85 = v73.v74(v5("return '\\v75\\v22\\v22\\v82\\v77\\v82\\v82'")()), v86 = v73.v74(v5("return '\\v75\\v21\\v90\\v15\\v78\\v82\\v17'")()), v88 = v73.v74(v5("return '\\v75\\v84\\v89\\v84\\v79\\v21\\v84'")()), v91 = v73.v74(v5("return '\\v75\\v93\\v84\\v93\\v93\\v82\\v81'")()) })
-v1:v69({ v70 = v5("return '\\v99\\v22\\v25'")(), v72 = v73.v74(v5("return '\\v75\\v15\\v76\\v81\\v17\\v81\\v17'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v82\\v79\\v25\\v79\\v25'")()), v83 = v73.v74(v5("return '\\v75\\v82\\v17\\v21\\v90\\v21\\v90'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v22\\v82\\v77\\v82\\v77'")()), v86 = v73.v74(v5("return '\\v75\\v82\\v17\\v21\\v90\\v21\\v90'")()), v88 = v73.v74(v5("return '\\v75\\v76\\v76\\v81\\v15\\v81\\v15'")()), v91 = v73.v74(v5("return '\\v75\\v22\\v82\\v78\\v78\\v78\\v78'")()) })
-v1:v69({ v70 = v5("return '\\v101\\v19\\v22\\v28\\v21\\v29\\v25'")(), v72 = v73.v74(v5("return '\\v75\\v79\\v78\\v89\\v87\\v90\\v89'")()), v80 = v73.v74(v5("return '\\v75\\v79\\v17\\v81\\v17\\v81\\v93'")()), v83 = v73.v74(v5("return '\\v75\\v93\\v22\\v22\\v89\\v15\\v89'")()), v85 = v73.v74(v5("return '\\v75\\v82\\v79\\v82\\v25\\v82\\v21'")()), v86 = v73.v74(v5("return '\\v75\\v93\\v22\\v22\\v89\\v15\\v89'")()), v88 = v73.v74(v5("return '\\v75\\v79\\v93\\v90\\v82\\v78\\v93'")()), v91 = v73.v74(v5("return '\\v75\\v81\\v79\\v15\\v76\\v87\\v81'")()) })
-v1:v69({ v70 = v5("return '\\v102\\v21\\v28\\v97'")(), v72 = v73.v74(v5("return '\\v75\\v81\\v87\\v81\\v87\\v81\\v15'")()), v80 = v73.v74(v5("return '\\v75\\v81\\v79\\v81\\v79\\v81\\v79'")()), v83 = v73.v74(v5("return '\\v75\\v20\\v20\\v20\\v20\\v20\\v20'")()), v85 = v73.v74(v5("return '\\v75\\v20\\v20\\v20\\v20\\v20\\v20'")()), v86 = v73.v74(v5("return '\\v75\\v89\\v21\\v89\\v21\\v89\\v21'")()), v88 = v73.v74(v5("return '\\v75\\v90\\v77\\v90\\v77\\v90\\v15'")()), v91 = v73.v74(v5("return '\\v75\\v21\\v81\\v21\\v81\\v21\\v21'")()) })
-local v103 = v3:v104(v5("return '\\v94\\v18\\v24\\v7\\v22\\v24\\v7\\v92\\v28\\v18\\v105\\v13\\v25\\v22\\v28'")())
-local v106 = v3:v104(v5("return '\\v92\\v29\\v21\\v95\\v22\\v28\\v9'")())
-local v107 = v106.v108
-local v109 = {
-v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11\\v81\\v81\\v93\\v77\\v81\\v81\\v84\\v87\\v76\\v78\\v93\\v90\\v84\\v81\\v87'")(),
-v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11\\v76\\v77\\v87\\v87\\v84\\v90\\v87\\v87\\v90\\v78\\v76\\v76\\v76\\v76'")(),
-v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11\\v81\\v79\\v87\\v76\\v81\\v89\\v84\\v79\\v87\\v89\\v79\\v81\\v93\\v93\\v78'")(),
-v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11\\v81\\v79\\v81\\v84\\v76\\v79\\v77\\v84\\v84\\v93\\v76\\v84\\v93\\v76\\v79'")(),
-}
-local v111 = { v5("return '\\v38\\v112\\v46\\v49\\v65\\v47\\v32\\v81'")(), v5("return '\\v38\\v112\\v46\\v49\\v65\\v47\\v32\\v77'")(), v5("return '\\v38\\v112\\v46\\v49\\v65\\v47\\v32\\v84'")(), v5("return '\\v38\\v112\\v46\\v49\\v65\\v47\\v32\\v78'")() }
-local v113 = v109[1]
-local v114 = nil
-v115.v116(function()
-v117(function() v103:v118(v109) end)
-end)
-local function v119(v120)
-if not v120 or v121(v120) ~= v5("return '\\v9\\v7\\v28\\v13\\v24\\v12'")() or v120 == v5("return ''")() then return nil end
-v120 = v122(v120):v123(v5("return '\\v124\\v9'")(), v5("return ''")())
-if v120 == v5("return ''")() then return nil end
-if v125.v126(v120, v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11'")()) or v125.v126(v120, v5("return '\\v28\\v15\\v110\\v7\\v6\\v14\\v19\\v15\\v10\\v11\\v11'")()) or v125.v126(v120, v5("return '\\v6\\v7\\v7\\v8'")()) then return v120 end
-if v125.v127(v120, v5("return '\\v128\\v124\\v25\\v129\\v130'")()) then return v5("return '\\v28\\v15\\v110\\v21\\v9\\v9\\v22\\v7\\v13\\v25\\v10\\v11\\v11'")() .. v120 end
-return nil
-end
-function v131(v120)
-if not v120 or v121(v120) ~= v5("return '\\v9\\v7\\v28\\v13\\v24\\v12'")() or v120 == v5("return ''")() then return end
-local v132 = v119(v120)
-if not v132 then
-v1:v133({ v134 = v5("return '\\v135\\v136\\v65\\v38\\v47\\v47'")(), v137 = v5("return '\\v49\\v138\\v37\\v49\\v139\\v57\\v53\\v140\\v141\\v33\\v59\\v142\\v53\\v62\\v143\\v32\\v27\\v102'")(), v91 = v5("return '\\v110'")(), v144 = 3 })
-return
-end
-v113 = v132
-v115.v116(function() v117(function() v103:v118({ v113 }) end) end)
-if v114 and v114.v145 then
-local v146 = v114:v147(v5("return '\\v148\\v12\\v27\\v19\\v21\\v12\\v22\\v149\\v18\\v29\\v25\\v22\\v28'")())
-if v146 then
-local v150 = v146:v147(v5("return '\\v23\\v13\\v24\\v25\\v18\\v30\\v148\\v21\\v17\\v97\\v12\\v28\\v18\\v14\\v24\\v25'")())
-if v150 then
-v150.v151 = v5("return ''")()
-v115.v152(0.05)
-v150.v151 = v113
-v150.v153 = 0
-end
-end
-end
-v1:v133({ v134 = v5("return '\\v38\\v112\\v46\\v49\\v65\\v47\\v33\\v48\\v154\\v49\\v59\\v42\\v49\\v58\\v155'")(), v137 = v113, v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 2 })
-end
-local function v156()
-local v157 = { v3:v104(v5("return '\\v94\\v18\\v28\\v22\\v158\\v14\\v13'")()) }
-local v159, v160 = v117(function() return v161() end)
-if v159 and v160 then v162.v163(v157, 1, v160) end
-local v164 = v107:v147(v5("return '\\v92\\v29\\v21\\v95\\v22\\v28\\v158\\v14\\v13'")())
-if v164 then v162.v163(v157, v164) end
-for v165, v166 in v167(v157) do
-for v165, v168 in v167(v166:v169()) do
-if v168:v170(v5("return '\\v100\\v17\\v28\\v22\\v22\\v24\\v158\\v14\\v13'")()) and (v125.v126(v125.v171(v168.v70), v5("return '\\v30\\v13\\v24\\v25\\v14\\v13'")()) or v125.v126(v125.v171(v168.v70), v5("return '\\v30\\v13\\v24\\v25'")())) then
-local v172, v173 = nil, 0
-for v165, v174 in v167(v168:v175()) do
-if v174:v170(v5("return '\\v20\\v28\\v21\\v19\\v22'")()) and v174:v176(v5("return '\\v26\\v27\\v94\\v18\\v28\\v24\\v22\\v28'")()) then
-local v177 = v174.v178.v179 * v174.v178.v180
-if v177 > v173 then
-v173 = v177
-v172 = v174
-end
-end
-end
-if v172 then return v172 end
-end
-end
-end
-return nil
-end
-local function v181()
-local v182 = v156()
-if not v182 then return end
-v114 = v182
-v182.v183 = 1
-v182.v184 = false
-for v165, v185 in v167(v182:v169()) do
-if v185:v170(v5("return '\\v20\\v28\\v21\\v19\\v22'")()) and v185.v70 ~= v5("return '\\v148\\v12\\v27\\v19\\v21\\v12\\v22\\v149\\v18\\v29\\v25\\v22\\v28'")() and v185.v70 ~= v5("return '\\v96\\v21\\v28\\v186\\v14\\v22\\v22\\v158\\v29\\v18\\v30'")() then
-if v185.v187.v188 < 0.2 and v185.v187.v189 < 0.2 and v185.v187.v190 < 0.2 then
-v185.v183 = 0.9
-end
-end
-end
-local v191 = 12
-local v192 = v182:v176(v5("return '\\v26\\v27\\v94\\v18\\v28\\v24\\v22\\v28'")())
-if v192 and v193(v192.v194) == v5("return '\\v26\\v102\\v13\\v19'")() then v191 = v192.v194.v195 end
-if not v182:v147(v5("return '\\v148\\v12\\v27\\v19\\v21\\v12\\v22\\v149\\v18\\v29\\v25\\v22\\v28'")()) then
-local v146 = v196.v197(v5("return '\\v20\\v28\\v21\\v19\\v22'")())
-v146.v70 = v5("return '\\v148\\v12\\v27\\v19\\v21\\v12\\v22\\v149\\v18\\v29\\v25\\v22\\v28'")()
-v146.v187 = v73.v198(255, 255, 255)
-v146.v183 = 0.85
-v146.v199 = v200.v197(1, 0, 1, 0)
-v146.v184 = true
-v146.v201 = -10
-v146.v145 = v182
-local v202 = v196.v197(v5("return '\\v26\\v27\\v94\\v18\\v28\\v24\\v22\\v28'")())
-v202.v194 = v203.v197(0, v191)
-v202.v145 = v146
-local v150 = v196.v197(v5("return '\\v27\\v19\\v21\\v12\\v22\\v204\\v21\\v15\\v22\\v29'")())
-v150.v70 = v5("return '\\v23\\v13\\v24\\v25\\v18\\v30\\v148\\v21\\v17\\v97\\v12\\v28\\v18\\v14\\v24\\v25'")()
-v150.v183 = 1
-v150.v199 = v200.v197(1, 0, 1, 0)
-v150.v151 = v113
-v150.v205 = v206.v205.v207
-v150.v153 = 0
-v150.v201 = 0
-v150.v145 = v146
-end
-if not v182:v147(v5("return '\\v96\\v21\\v28\\v186\\v14\\v22\\v22\\v100\\v7\\v28\\v18\\v97\\v22'")()) then
-local v208 = v196.v197(v5("return '\\v26\\v27\\v100\\v7\\v28\\v18\\v97\\v22'")())
-v208.v70 = v5("return '\\v96\\v21\\v28\\v186\\v14\\v22\\v22\\v100\\v7\\v28\\v18\\v97\\v22'")()
-v208.v209 = 2.5
-v208.v210 = 0.1
-v208.v211 = v206.v211.v212
-v208.v145 = v182
-local v213 = v196.v197(v5("return '\\v26\\v27\\v158\\v28\\v21\\v25\\v13\\v22\\v24\\v7'")())
-v213.v214 = v215.v197({
-v216.v197(0.00, v73.v198(0, 210, 255)),
-v216.v197(0.50, v73.v198(255, 60, 160)),
-v216.v197(1.00, v73.v198(0, 210, 255)),
-})
-v213.v145 = v208
-v115.v116(function()
-local v217 = 0
-while v208.v145 do
-v217 += v115.v152(0.03)
-v213.v218 = (v217 * 150) % 360
-end
-end)
-v115.v116(function()
-while v208.v145 do
-v219:v220(v208, v221.v197(1.2, v206.v222.v223, v206.v224.v225), { v210 = 0.45 }):v226()
-v115.v152(1.2)
-if not v208.v145 then break end
-v219:v220(v208, v221.v197(1.2, v206.v222.v223, v206.v224.v225), { v210 = 0.05 }):v226()
-v115.v152(1.2)
-end
-end)
-end
-end
-v115.v116(function()
-for v165 = 1, 50 do
-v115.v152(0.1)
-if v156() then break end
-end
-v115.v152(0.5)
-v181()
-while true do
-v115.v152(0.5)
-if v114 and v114.v145 then
-v114.v183 = 1
-local v146 = v114:v147(v5("return '\\v148\\v12\\v27\\v19\\v21\\v12\\v22\\v149\\v18\\v29\\v25\\v22\\v28'")())
-if v146 then
-v146.v201 = -10
-local v150 = v146:v147(v5("return '\\v23\\v13\\v24\\v25\\v18\\v30\\v148\\v21\\v17\\v97\\v12\\v28\\v18\\v14\\v24\\v25'")())
-if v150 then v150.v201 = 0 end
-end
-else
-v114 = nil
-v181()
-end
-end
-end)
-local v219 = v3:v104(v5("return '\\v227\\v30\\v22\\v22\\v24\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v228 = true
-local v229 = 5
-local v230 = 3.0
-local v231 = {}
-local v232 = v196.v197(v5("return '\\v100\\v17\\v28\\v22\\v22\\v24\\v158\\v14\\v13'")())
-v232.v70 = v5("return '\\v13\\v233\\v100\\v234\\v18\\v7\\v13\\v82\\v95\\v158\\v14\\v13'")()
-v232.v235 = false
-v232.v236 = v206.v236.v237
-v232.v145 = v107:v238(v5("return '\\v92\\v29\\v21\\v95\\v22\\v28\\v158\\v14\\v13'")())
-local v239 = v196.v197(v5("return '\\v20\\v28\\v21\\v19\\v22'")())
-v239.v70 = v5("return '\\v99\\v13\\v12\\v6\\v7\\v94\\v18\\v24\\v7\\v21\\v13\\v24\\v22\\v28'")()
-v239.v199 = v200.v197(0, 300, 1, -60)
-v239.v240 = v200.v197(1, -310, 0, 30)
-v239.v183 = 1
-v239.v184 = true
-v239.v145 = v232
-local v241 = v196.v197(v5("return '\\v26\\v27\\v204\\v13\\v9\\v7\\v204\\v21\\v95\\v18\\v14\\v7'")())
-v241.v242 = v206.v242.v243
-v241.v244 = v203.v197(0, 12)
-v241.v245 = v206.v245.v246
-v241.v247 = v206.v247.v248
-v241.v145 = v239
-local function v249(v250)
-local v208 = v196.v197(v5("return '\\v26\\v27\\v100\\v7\\v28\\v18\\v97\\v22'")())
-v208.v70 = v5("return '\\v94\\v21\\v28\\v25\\v96\\v21\\v28\\v186\\v14\\v22\\v22'")()
-v208.v209 = 2
-v208.v210 = 0.1
-v208.v211 = v206.v211.v212
-v208.v145 = v250
-local v213 = v196.v197(v5("return '\\v26\\v27\\v158\\v28\\v21\\v25\\v13\\v22\\v24\\v7'")())
-v213.v214 = v215.v197({
-v216.v197(0.00, v73.v198(0, 210, 255)),
-v216.v197(0.33, v73.v198(130, 80, 255)),
-v216.v197(0.66, v73.v198(255, 60, 160)),
-v216.v197(1.00, v73.v198(0, 210, 255)),
-})
-v213.v145 = v208
-v115.v116(function()
-local v217 = 0
-while v250.v145 do
-v217 += v115.v152(0.03)
-v213.v218 = (v217 * 180) % 360
-end
-end)
-v115.v116(function()
-while v250.v145 do
-v219:v220(v208, v221.v197(1.2, v206.v222.v223, v206.v224.v225), { v210 = 0.45 }):v226()
-v115.v152(1.2)
-if not v250.v145 then break end
-v219:v220(v208, v221.v197(1.2, v206.v222.v223, v206.v224.v225), { v210 = 0.05 }):v226()
-v115.v152(1.2)
-end
-end)
-end
-local function v251(v252, v253)
-if not v228 then return end
-if #v231 >= v229 then
-local v254 = v162.v255(v231, 1)
-if v254 and v254.v145 then v254:v256() end
-end
-local v250 = v196.v197(v5("return '\\v20\\v28\\v21\\v19\\v22'")())
-v250.v199 = v200.v197(0, 280, 0, 56)
-v250.v187 = v253 and v73.v198(48, 209, 88) or v73.v198(255, 59, 48)
-v250.v183 = 0.75
-v250.v257 = 0
-v250.v184 = true
-v250.v243 = v258()
-v250.v145 = v239
-local v259 = v196.v197(v5("return '\\v26\\v27\\v94\\v18\\v28\\v24\\v22\\v28'")())
-v259.v194 = v203.v197(0, 16)
-v259.v145 = v250
-v249(v250)
-local v260 = v196.v197(v5("return '\\v20\\v28\\v21\\v19\\v22'")())
-v260.v199 = v200.v197(1, 0, 0.5, 0)
-v260.v187 = v73.v198(255, 255, 255)
-v260.v183 = 0.88
-v260.v257 = 0
-v260.v145 = v250
-local v261 = v196.v197(v5("return '\\v26\\v27\\v94\\v18\\v28\\v24\\v22\\v28'")())
-v261.v194 = v203.v197(0, 16)
-v261.v145 = v260
-local v262 = 28
-local v263 = v196.v197(v5("return '\\v227\\v22\\v110\\v7\\v204\\v21\\v15\\v22\\v29'")())
-v263.v199 = v200.v197(0, 280 - v262 - 16, 0, 22)
-v263.v240 = v200.v197(0, v262, 0, 8)
-v263.v183 = 1
-v263.v85 = v253 and v5("return '\\v53\\v264\\v265\\v33\\v266\\v267\\v33\\v36\\v37\\v33\\v268\\v43'")() or v5("return '\\v53\\v264\\v265\\v33\\v266\\v267\\v53\\v269\\v55\\v33\\v45\\v51'")()
-v263.v270 = v73.v198(255, 255, 255)
-v263.v271 = 15
-v263.v272 = v206.v272.v273
-v263.v274 = v206.v274.v275
-v263.v276 = 1
-v263.v145 = v250
-local v277 = v196.v197(v5("return '\\v227\\v22\\v110\\v7\\v204\\v21\\v15\\v22\\v29'")())
-v277.v199 = v200.v197(0, 280 - v262 - 16, 0, 18)
-v277.v240 = v200.v197(0, v262, 0, 30)
-v277.v183 = 1
-v277.v85 = v252
-v277.v270 = v73.v198(230, 230, 230)
-v277.v271 = 13
-v277.v272 = v206.v272.v278
-v277.v274 = v206.v274.v275
-v277.v276 = 1
-v277.v145 = v250
-v250.v240 = v200.v197(0, 300, 0, 0)
-v162.v163(v231, v250)
-v219:v220(v250, v221.v197(0.45, v206.v222.v279, v206.v224.v280), { v240 = v200.v197(0, 0, 0, 0) }):v226()
-v219:v220(v263, v221.v197(0.35), { v276 = 0 }):v226()
-v219:v220(v277, v221.v197(0.35), { v276 = 0 }):v226()
-v115.v281(v230, function()
-v219:v220(v250, v221.v197(0.7, v206.v222.v279, v206.v224.v225), { v240 = v200.v197(0, -300, 0, 0) }):v226()
-v219:v220(v263, v221.v197(0.6), { v276 = 1 }):v226()
-v219:v220(v277, v221.v197(0.6), { v276 = 1 }):v226()
-v115.v281(0.8, function()
-if v250 and v250.v145 then v250:v256() end
-for v282, v283 in v167(v231) do
-if v283 == v250 then v162.v255(v231, v282); break end
-end
-end)
-end)
-end
-v106.v284:v285(function(v286) if v286 ~= v107 then v251(v286.v70, true) end end)
-v106.v287:v285(function(v286) if v286 ~= v107 then v251(v286.v70, false) end end)
-v115.v288(function()
-for v165, v286 in v167(v106:v289()) do if v286 ~= v107 then v251(v286.v70, true) end end
-end)
-local function v290(v291, v292)
-v1:v133({ v134 = v5("return '\\v33\\v36\\v37\\v38\\v39\\v39\\v293\\v294\\v295'")(), v137 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v33\\v36\\v37\\v38\\v39\\v39\\v32'")() .. v291 .. v5("return '\\v16\\v16\\v16'")(), v91 = v5("return '\\v29\\v18\\v21\\v25\\v22\\v28'")(), v144 = 2 })
-v115.v116(function()
-local v159, v296 = v117(function() return v3:v4(v292, true) end)
-if not v159 then
-v1:v133({ v134 = v5("return '\\v293\\v294\\v297\\v38\\v39\\v39\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v291 .. v5("return '\\v32\\v135\\v136\\v65\\v38\\v47\\v47\\v10\\v32'")() .. v122(v296), v91 = v5("return '\\v110'")(), v144 = 5 })
-return
-end
-local v298, v299 = v117(function() v2(v296)() end)
-if v298 then
-v1:v133({ v134 = v5("return '\\v33\\v36\\v37\\v38\\v39\\v39\\v49\\v57\\v300\\v33\\v36\\v52'")(), v137 = v291 .. v5("return '\\v32\\v33\\v48\\v154\\v33\\v36\\v37\\v38\\v39\\v39'")(), v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 3 })
-else
-v1:v133({ v134 = v5("return '\\v49\\v62\\v63\\v38\\v64\\v46\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v291 .. v5("return '\\v32\\v135\\v136\\v65\\v38\\v47\\v47\\v10\\v32'")() .. v122(v299), v91 = v5("return '\\v110'")(), v144 = 5 })
-end
-end)
-end
-v1:v301({
-v134 = v5("return '\\v33\\v302\\v155\\v53\\v45\\v303\\v33\\v300\\v57\\v38\\v141\\v140\\v49\\v56\\v304'")(),
-v91 = v5("return '\\v13\\v24\\v82\\v18'")(),
-v137 = v5("return '\\v53\\v68\\v305\\v33\\v143\\v55\\v49\\v62\\v63\\v38\\v64\\v46\\v38\\v306\\v59\\v33\\v268\\v43\\v38\\v141\\v140\\v49\\v56\\v304\\v293\\v294\\v55\\v53\\v139\\v46\\v135\\v303\\v61\\v307\\v24\\v293\\v39\\v56\\v38\\v51\\v268\\v44\\v45\\v140\\v49\\v269\\v302\\v32\\v308\\v32\\v33\\v309\\v68\\v293\\v294\\v264\\v38\\v51\\v268\\v44\\v45\\v140\\v33\\v306\\v112\\v49\\v141\\v309\\v33\\v302\\v155\\v33\\v295\\v310\\v311\\v33\\v312\\v265\\v313'")(),
-v314 = {
-{
-v134 = v5("return '\\v135\\v51\\v51\\v33\\v143\\v34'")(),
-v315 = function() end,
-v316 = v5("return '\\v227\\v22\\v28\\v7\\v13\\v21\\v28\\v95'")(),
-},
-{
-v134 = v5("return '\\v49\\v62\\v63\\v38\\v64\\v46'")(),
-v91 = v5("return '\\v21\\v28\\v28\\v18\\v30\\v317\\v28\\v13\\v12\\v6\\v7'")(),
-v315 = function()
-local v318 = v1:v319({
-v134 = v5("return '\\v33\\v302\\v155\\v53\\v45\\v303\\v33\\v300\\v57\\v38\\v141\\v140\\v49\\v56\\v304'")(),
-v91 = v5("return '\\v25\\v18\\v18\\v28\\v317\\v18\\v8\\v22\\v24'")(),
-v320 = v5("return '\\v49\\v269\\v302'")(),
-v321 = false,
-})
-v318:v322(true)
-local v323 = v318:v324({ v134 = v5("return '\\v33\\v268\\v304\\v33\\v54\\v36'")(), v91 = v5("return '\\v19\\v22\\v12\\v21\\v8\\v6\\v18\\v24\\v22'")(), v325 = false })
-v323:v326({ v134 = v5("return '\\v49\\v304\\v61\\v38\\v306\\v264\\v293\\v39\\v306\\v53\\v136\\v66'")(), v327 = v5("return '\\v49\\v56\\v304\\v38\\v141\\v140\\v49\\v56\\v304\\v53\\v136\\v41\\v32\\v49\\v269\\v302\\v32\\v33\\v45\\v51\\v33\\v309\\v54\\v44\\v45\\v46\\v293\\v55\\v268\\v293\\v142\\v59\\v33\\v295\\v269\\v293\\v305\\v37\\v293\\v34\\v40\\v49\\v312\\v328\\v293\\v39\\v306\\v53\\v136\\v66\\v67\\v51\\v68'")() })
-v323:v326({
-v134 = v5("return '\\v53\\v264\\v265\\v33\\v266\\v267\\v293\\v306\\v64\\v49\\v328\\v47'")(),
-v327 = v5("return '\\v53\\v136\\v66\\v49\\v57\\v48\\v33\\v300\\v60\\v10\\v32'")() .. v107.v70 .. v5("return '\\v307\\v24\\v49\\v310\\v142\\v53\\v40\\v34\\v33\\v300\\v60\\v53\\v63\\v155\\v10\\v32'")() .. v107.v329 .. v5("return '\\v307\\v24\\v38\\v42\\v269\\v33\\v309\\v48\\v33\\v305\\v42\\v135\\v142\\v141\\v10\\v32'")() .. v107.v330 .. v5("return '\\v32\\v33\\v40\\v265\\v307\\v24\\v53\\v136\\v66\\v49\\v57\\v48\\v27\\v102\\v10\\v32'")() .. v107.v331,
-v151 = v5("return '\\v14\\v9\\v22\\v28'")(),
-v332 = 20
-})
-local v333 = v318:v324({ v134 = v5("return '\\v293\\v294\\v55\\v38\\v269\\v328'")(), v91 = v5("return '\\v6\\v18\\v14\\v9\\v22'")(), v325 = false })
-v333:v326({ v134 = v5("return '\\v293\\v39\\v56\\v38\\v51\\v268\\v293\\v306\\v64\\v49\\v328\\v47'")(), v327 = v5("return '\\v293\\v39\\v56\\v38\\v51\\v268\\v44\\v45\\v140\\v49\\v269\\v302\\v307\\v24\\v33\\v309\\v68\\v293\\v294\\v264\\v38\\v51\\v268\\v44\\v45\\v140\\v33\\v306\\v112\\v49\\v141\\v309\\v33\\v302\\v155\\v33\\v295\\v310\\v311\\v33\\v312\\v265\\v313'")() })
-v333:v334({
-v134 = v5("return '\\v33\\v57\\v143\\v49\\v60\\v61\\v38\\v112\\v46\\v49\\v65\\v47\\v33\\v59\\v142\\v53\\v62\\v143'")(),
-v335 = v111,
-v336 = v111[1],
-v315 = function(v337)
-for v282, v291 in v167(v111) do
-if v291 == v337 then
-v131(v109[v282])
-break
-end
-end
-end
-})
-v333:v338({
-v134 = v5("return '\\v38\\v143\\v339\\v33\\v266\\v140\\v293\\v305\\v62\\v38\\v112\\v46\\v49\\v65\\v47\\v33\\v59\\v142\\v53\\v62\\v143\\v32\\v27\\v102'")(),
-v327 = v5("return '\\v38\\v142\\v35\\v33\\v268\\v43\\v33\\v59\\v142\\v53\\v62\\v143\\v32\\v27\\v102\\v32\\v33\\v300\\v264\\v49\\v46\\v62\\v33\\v59\\v340\\v38\\v39\\v269\\v33\\v34\\v136\\v53\\v136\\v66'")(),
-v91 = v5("return '\\v13\\v19\\v21\\v12\\v22'")(),
-v315 = function(v341)
-if v341 and v341 ~= v5("return ''")() then
-v131(v341)
-end
-end
-})
-v333:v88({
-v134 = v5("return '\\v33\\v34\\v136\\v53\\v136\\v66\\v32\\v11\\v32\\v33\\v57\\v48\\v49\\v58\\v155\\v38\\v112\\v46\\v49\\v65\\v47'")(),
-v327 = v5("return '\\v135\\v143\\v60\\v49\\v58\\v155\\v33\\v36\\v37\\v38\\v39\\v39\\v33\\v39\\v35\\v33\\v62\\v60\\v38\\v112\\v46\\v49\\v65\\v47\\v33\\v59\\v142\\v53\\v62\\v143'")(),
-v91 = v5("return '\\v28\\v22\\v82\\v28\\v22\\v9\\v6\\v317\\v17\\v30'")(),
-v315 = function() v131(v113) end
-})
-local v342 = v318:v324({ v134 = v5("return '\\v38\\v306\\v59\\v33\\v143\\v34\\v49\\v309\\v300\\v53\\v40\\v34'")(), v91 = v5("return '\\v15\\v22\\v29\\v29'")(), v325 = false })
-v342:v343({
-v134 = v5("return '\\v33\\v300\\v47\\v53\\v136\\v66\\v53\\v264\\v265\\v33\\v266\\v267\\v38\\v306\\v59\\v33\\v143\\v34\\v49\\v309\\v300\\v53\\v40\\v34'")(),
-v336 = true,
-v315 = function(v344) v228 = v344; v232.v345 = v344 end
-})
-v342:v346({
-v134 = v5("return '\\v49\\v309\\v300\\v53\\v40\\v34\\v33\\v328\\v56\\v53\\v139\\v65\\v49\\v138\\v267\\v135\\v138\\v42\\v44\\v45\\v57\\v53\\v63\\v347\\v44\\v45\\v62'")(),
-v336 = { v348 = 1, v349 = 8, v350 = 3 },
-v315 = function(v344) v230 = v344 end
-})
-v342:v346({
-v134 = v5("return '\\v49\\v56\\v51\\v33\\v40\\v63\\v33\\v300\\v46\\v49\\v138\\v267\\v49\\v310\\v142\\v53\\v40\\v34\\v49\\v303\\v64\\v49\\v139\\v155'")(),
-v336 = { v348 = 1, v349 = 10, v350 = 5 },
-v315 = function(v344) v229 = v351.v352(v344) end
-})
-v342:v353({ v134 = v5("return '\\v49\\v312\\v297\\v38\\v47\\v139'")() })
-v342:v88({ v134 = v5("return '\\v49\\v312\\v297\\v38\\v47\\v139\\v32\\v317\\v32\\v53\\v264\\v265\\v33\\v266\\v267\\v33\\v36\\v37\\v33\\v268\\v43'")(), v315 = function() v251(v5("return '\\v227\\v22\\v9\\v7\\v92\\v29\\v21\\v95\\v22\\v28\\v354\\v355\\v18\\v13\\v24'")(), true) end })
-v342:v88({ v134 = v5("return '\\v49\\v312\\v297\\v38\\v47\\v139\\v32\\v317\\v32\\v53\\v264\\v265\\v33\\v266\\v267\\v53\\v269\\v55\\v33\\v45\\v51'")(), v315 = function() v251(v5("return '\\v227\\v22\\v9\\v7\\v92\\v29\\v21\\v95\\v22\\v28\\v354\\v204\\v22\\v21\\v105\\v22'")(), false) end })
-local v356 = v318:v324({ v134 = v5("return '\\v38\\v141\\v140\\v49\\v56\\v304\\v33\\v34\\v35'")(), v91 = v5("return '\\v17\\v18\\v25\\v22'")(), v325 = false })
-v356:v353({ v134 = v5("return '\\v71\\v22\\v28\\v18\\v32\\v38\\v141\\v140\\v49\\v56\\v304\\v33\\v34\\v35'")() })
-v356:v88({ v134 = v5("return '\\v357\\v58\\v267\\v32\\v33\\v36\\v37\\v38\\v39\\v39\\v32\\v38\\v267\\v268\\v135\\v358\\v310\\v135\\v51\\v52\\v38\\v48\\v54\\v38\\v51\\v268'")(), v315 = function() v290(v5("return '\\v38\\v267\\v268\\v135\\v358\\v310\\v135\\v51\\v52\\v38\\v48\\v54\\v38\\v51\\v268'")(), v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v28\\v21\\v30\\v16\\v12\\v13\\v7\\v6\\v14\\v15\\v14\\v9\\v22\\v28\\v17\\v18\\v24\\v7\\v22\\v24\\v7\\v16\\v17\\v18\\v19\\v11\\v30\\v30\\v25\\v93\\v24\\v12\\v77\\v359\\v93\\v93\\v317\\v21\\v28\\v7\\v11\\v317\\v11\\v19\\v21\\v13\\v24\\v11\\v124\\v101\\v87\\v124\\v148\\v93\\v124\\v87\\v90\\v124\\v101\\v76\\v124\\v71\\v148\\v124\\v76\\v87\\v124\\v101\\v76\\v124\\v87\\v79\\v124\\v76\\v20\\v124\\v101\\v87\\v124\\v148\\v89\\v124\\v76\\v81\\v124\\v101\\v87\\v124\\v87\\v79\\v124\\v87\\v90\\v16\\v29\\v14\\v21'")()) end })
-v356:v88({ v134 = v5("return '\\v357\\v58\\v267\\v32\\v33\\v36\\v37\\v38\\v39\\v39\\v32\\v76\\v76\\v33\\v40\\v56\\v38\\v141\\v140\\v49\\v56\\v304'")(), v315 = function() v290(v5("return '\\v76\\v76\\v33\\v40\\v56'")(), v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v28\\v21\\v30\\v16\\v12\\v13\\v7\\v6\\v14\\v15\\v14\\v9\\v22\\v28\\v17\\v18\\v24\\v7\\v22\\v24\\v7\\v16\\v17\\v18\\v19\\v11\\v30\\v30\\v25\\v93\\v24\\v12\\v77\\v359\\v93\\v93\\v317\\v21\\v28\\v7\\v11\\v317\\v11\\v84\\v87\\v21\\v21\\v90\\v81\\v78\\v21\\v90\\v93\\v81\\v25\\v25\\v84\\v78\\v78\\v22\\v84\\v15\\v89\\v90\\v17\\v93\\v79\\v22\\v77\\v81\\v81\\v76\\v89\\v22\\v78\\v87\\v78\\v82\\v17\\v84\\v81\\v21\\v21\\v11\\v76\\v76\\v124\\v77\\v79\\v124\\v101\\v90\\v124\\v71\\v78\\v124\\v76\\v94\\v16\\v29\\v14\\v21'")()) end })
-v356:v353({ v134 = v5("return '\\v33\\v268\\v267\\v293\\v55\\v58\\v38\\v141\\v140\\v49\\v56\\v304\\v33\\v34\\v35'")() })
-v356:v88({ v134 = v5("return '\\v357\\v58\\v267\\v32\\v33\\v36\\v37\\v38\\v39\\v39\\v32\\v33\\v328\\v48\\v293\\v294\\v51\\v293\\v294\\v339\\v38\\v59\\v297\\v32\\v311\\v227\\v360\\v32\\v100\\v17\\v28\\v13\\v8\\v7\\v313'")(), v315 = function() v290(v5("return '\\v33\\v328\\v48\\v293\\v294\\v51\\v293\\v294\\v339\\v38\\v59\\v297'")(), v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v28\\v21\\v30\\v16\\v12\\v13\\v7\\v6\\v14\\v15\\v14\\v9\\v22\\v28\\v17\\v18\\v24\\v7\\v22\\v24\\v7\\v16\\v17\\v18\\v19\\v11\\v355\\v9\\v361\\v15\\v93\\v93\\v93\\v11\\v27\\v7\\v22\\v19\\v11\\v28\\v22\\v82\\v9\\v11\\v6\\v22\\v21\\v25\\v9\\v11\\v19\\v21\\v13\\v24\\v11\\v100\\v7\\v22\\v21\\v29\\v317\\v101\\v12\\v12\\v9'")()) end })
-local v362 = v318:v324({ v134 = v5("return '\\v38\\v266\\v142\\v53\\v39\\v266'")(), v91 = v5("return '\\v9\\v22\\v7\\v7\\v13\\v24\\v12\\v9'")(), v325 = false })
-v362:v343({
-v134 = v5("return '\\v33\\v57\\v143\\v49\\v60\\v61\\v135\\v51\\v309\\v49\\v310\\v264\\v53\\v339\\v138\\v33\\v309\\v50'")(),
-v315 = function(v363) v318:v322(v363) end,
-v336 = v1:v364()
-})
-v362:v334({
-v134 = v5("return '\\v33\\v57\\v143\\v49\\v60\\v61\\v293\\v294\\v55\\v135\\v61\\v310'")(),
-v335 = { v5("return '\\v102\\v21\\v28\\v97'")(), v5("return '\\v71\\v19\\v15\\v22\\v28'")(), v5("return '\\v92\\v29\\v21\\v24\\v7'")(), v5("return '\\v94\\v18\\v7\\v7\\v18\\v24\\v32\\v94\\v21\\v24\\v25\\v95'")(), v5("return '\\v96\\v18\\v24\\v18\\v97\\v21\\v13\\v32\\v92\\v28\\v18'")(), v5("return '\\v94\\v28\\v13\\v19\\v9\\v18\\v24'")(), v5("return '\\v98\\v13\\v18\\v29\\v22\\v7'")(), v5("return '\\v96\\v13\\v25\\v24\\v13\\v12\\v6\\v7'")(), v5("return '\\v99\\v18\\v9\\v22'")(), v5("return '\\v96\\v22\\v29\\v29\\v18\\v30\\v9\\v13'")(), v5("return '\\v100\\v97\\v95'")(), v5("return '\\v27\\v24\\v25\\v13\\v12\\v18'")(), v5("return '\\v99\\v22\\v25'")(), v5("return '\\v101\\v19\\v22\\v28\\v21\\v29\\v25'")() },
-v336 = v5("return '\\v102\\v21\\v28\\v97'")(),
-v315 = function(v337) v1:v365(v337); v1:v366() end
-})
-v362:v367()
-v362:v88({
-v134 = v5("return '\\v135\\v143\\v60\\v49\\v58\\v155\\v33\\v36\\v37\\v33\\v268\\v43\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v327 = v5("return '\\v38\\v143\\v339\\v33\\v36\\v66\\v38\\v47\\v55\\v33\\v309\\v58\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102\\v32\\v33\\v305\\v267\\v135\\v143\\v60\\v49\\v58\\v155\\v33\\v36\\v37\\v33\\v268\\v43'")(),
-v91 = v5("return '\\v28\\v22\\v82\\v28\\v22\\v9\\v6\\v317\\v17\\v30'")(),
-v315 = function()
-local v368 = v3.v369
-if v368 and v368 ~= v5("return ''")() then
-local v298, v299 = v117(function() v3:v104(v5("return '\\v227\\v22\\v29\\v22\\v8\\v18\\v28\\v7\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")()):v370(v3.v371, v368, v107) end)
-if v298 then v1:v133({ v134 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v135\\v143\\v60\\v38\\v306\\v340'")(), v137 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v38\\v306\\v136\\v33\\v59\\v340\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v16\\v16\\v16'")(), v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 3 })
-else v1:v133({ v134 = v5("return '\\v135\\v143\\v60\\v38\\v306\\v340\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v49\\v138\\v37\\v49\\v372\\v139\\v38\\v306\\v136\\v33\\v59\\v340\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v67\\v51\\v68'")(), v91 = v5("return '\\v110'")(), v144 = 5 }) end
-else
-v1:v133({ v134 = v5("return '\\v135\\v143\\v60\\v38\\v306\\v340\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v49\\v138\\v37\\v49\\v372\\v139\\v38\\v264\\v48\\v33\\v309\\v58\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102'")(), v91 = v5("return '\\v110'")(), v144 = 3 })
-end
-end
-})
-v362:v367()
-v362:v88({
-v134 = v5("return '\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v38\\v48\\v372\\v38\\v48\\v112'")(),
-v327 = v5("return '\\v33\\v47\\v55\\v49\\v62\\v142\\v293\\v294\\v51\\v293\\v294\\v339\\v49\\v58\\v155\\v53\\v140\\v141\\v135\\v140\\v309\\v49\\v56\\v34\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v91 = v5("return '\\v12\\v29\\v18\\v15\\v22'")(),
-v315 = function()
-local v373 = v3:v104(v5("return '\\v227\\v22\\v29\\v22\\v8\\v18\\v28\\v7\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v374 = v3:v104(v5("return '\\v149\\v7\\v7\\v8\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v298, v375 = v117(function() return v374:v376(v3:v4(v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v12\\v21\\v19\\v22\\v9\\v16\\v28\\v18\\v15\\v29\\v18\\v110\\v16\\v17\\v18\\v19\\v11\\v105\\v81\\v11\\v12\\v21\\v19\\v22\\v9\\v11'")() .. v3.v371 .. v5("return '\\v11\\v9\\v22\\v28\\v105\\v22\\v28\\v9\\v11\\v92\\v14\\v15\\v29\\v13\\v17\\v377\\v9\\v18\\v28\\v7\\v233\\v28\\v25\\v22\\v28\\v378\\v71\\v9\\v17\\v379\\v29\\v13\\v19\\v13\\v7\\v378\\v81\\v79\\v79'")())) end)
-if v298 and v375 and v375.v380 and #v375.v380 > 0 then
-local v381 = v375.v380[v351.v382(1, #v375.v380)]
-v373:v370(v3.v371, v381.v120, v107)
-else
-v1:v133({ v134 = v5("return '\\v38\\v48\\v372\\v38\\v48\\v112\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v49\\v154\\v64\\v49\\v56\\v62\\v49\\v62\\v142\\v33\\v57\\v155\\v33\\v309\\v47\\v53\\v136\\v66\\v53\\v140\\v141\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(), v91 = v5("return '\\v110'")() })
-end
-end
-})
-v362:v367()
-v362:v88({
-v134 = v5("return '\\v33\\v36\\v37\\v33\\v268\\v43\\v293\\v34\\v34\\v33\\v155\\v54\\v53\\v140\\v141\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v327 = v5("return '\\v38\\v143\\v339\\v33\\v36\\v66\\v33\\v47\\v55\\v49\\v62\\v142\\v33\\v305\\v267\\v33\\v36\\v37\\v33\\v268\\v43\\v33\\v39\\v35\\v33\\v62\\v60\\v33\\v56\\v66\\v53\\v34\\v306\\v293\\v34\\v34\\v49\\v139\\v155\\v49\\v56\\v51\\v33\\v155\\v54\\v53\\v140\\v141\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v91 = v5("return '\\v14\\v9\\v22\\v28\\v9'")(),
-v315 = function()
-local v373 = v3:v104(v5("return '\\v227\\v22\\v29\\v22\\v8\\v18\\v28\\v7\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v374 = v3:v104(v5("return '\\v149\\v7\\v7\\v8\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v298, v375 = v117(function() return v374:v376(v3:v4(v5("return '\\v6\\v7\\v7\\v8\\v9\\v10\\v11\\v11\\v12\\v21\\v19\\v22\\v9\\v16\\v28\\v18\\v15\\v29\\v18\\v110\\v16\\v17\\v18\\v19\\v11\\v105\\v81\\v11\\v12\\v21\\v19\\v22\\v9\\v11'")() .. v3.v371 .. v5("return '\\v11\\v9\\v22\\v28\\v105\\v22\\v28\\v9\\v11\\v92\\v14\\v15\\v29\\v13\\v17\\v377\\v9\\v18\\v28\\v7\\v233\\v28\\v25\\v22\\v28\\v378\\v71\\v9\\v17\\v379\\v29\\v13\\v19\\v13\\v7\\v378\\v81\\v79\\v79'")())) end)
-if v298 and v375 and v375.v380 and #v375.v380 > 0 then
-v162.v383(v375.v380, function(v384, v385) return v384.v386 < v385.v386 end)
-local v387 = v375.v380[1]
-v373:v370(v3.v371, v387.v120, v107)
-v1:v133({ v134 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v38\\v48\\v372\\v38\\v48\\v112'")(), v137 = v5("return '\\v33\\v39\\v35\\v33\\v62\\v60\\v293\\v34\\v34\\v49\\v139\\v155\\v44\\v45\\v140'")() .. v387.v386, v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 3 })
-else
-v1:v133({ v134 = v5("return '\\v38\\v48\\v372\\v38\\v48\\v112\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v49\\v154\\v64\\v49\\v56\\v62\\v49\\v62\\v142\\v33\\v57\\v155\\v33\\v309\\v47\\v53\\v136\\v66\\v53\\v140\\v141\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(), v91 = v5("return '\\v110'")() })
-end
-end
-})
-v362:v367()
-v362:v88({
-v134 = v5("return '\\v33\\v40\\v60\\v33\\v57\\v267\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102'")(),
-v327 = v5("return '\\v33\\v155\\v302\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v53\\v140\\v141\\v32\\v27\\v102\\v32\\v33\\v40\\v60\\v33\\v57\\v267\\v33\\v57\\v155\\v33\\v62\\v339\\v38\\v42\\v42\\v49\\v303\\v306'")(),
-v91 = v5("return '\\v17\\v18\\v8\\v95'")(),
-v315 = function()
-if v3.v369 and v3.v369 ~= v5("return ''")() then
-v388(v3.v369)
-v1:v133({ v134 = v5("return '\\v33\\v40\\v60\\v33\\v57\\v267\\v49\\v57\\v300\\v33\\v36\\v52'")(), v137 = v5("return '\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102\\v32\\v33\\v48\\v154\\v33\\v40\\v60\\v33\\v57\\v267'")(), v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 3 })
-else
-v1:v133({ v134 = v5("return '\\v33\\v40\\v60\\v33\\v57\\v267\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v49\\v138\\v37\\v49\\v372\\v139\\v38\\v264\\v48\\v33\\v309\\v58\\v33\\v39\\v35\\v33\\v62\\v60\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102'")(), v91 = v5("return '\\v110'")(), v144 = 3 })
-end
-end
-})
-v362:v367()
-local v389 = v5("return ''")()
-v362:v338({
-v134 = v5("return '\\v38\\v142\\v35\\v33\\v268\\v43\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102'")(),
-v327 = v5("return '\\v53\\v154\\v310\\v38\\v42\\v42\\v293\\v39\\v37\\v49\\v112\\v372\\v33\\v36\\v37\\v33\\v268\\v43\\v53\\v140\\v141\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v355\\v18\\v15\\v27\\v25'")(),
-v91 = v5("return '\\v6\\v21\\v9\\v6'")(),
-v315 = function(v344) v389 = v344 end
-})
-v362:v367()
-v362:v88({
-v134 = v5("return '\\v33\\v36\\v37\\v33\\v268\\v43\\v53\\v62\\v305\\v33\\v266\\v140\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v327 = v5("return '\\v293\\v39\\v306\\v53\\v136\\v66\\v293\\v294\\v36\\v49\\v58\\v305\\v38\\v142\\v35\\v33\\v268\\v43\\v49\\v64\\v302\\v293\\v294\\v295\\v53\\v140\\v141\\v32\\v27\\v102\\v32\\v33\\v36\\v37\\v33\\v268\\v43\\v33\\v47\\v305\\v33\\v34\\v136\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66'")(),
-v91 = v5("return '\\v29\\v18\\v12\\v317\\v13\\v24'")(),
-v315 = function()
-if not v389 or v389 == v5("return ''")() then
-v1:v133({ v134 = v5("return '\\v33\\v36\\v37\\v33\\v268\\v43\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v5("return '\\v38\\v47\\v48\\v33\\v268\\v57\\v53\\v154\\v310\\v38\\v42\\v42\\v49\\v56\\v60\\v33\\v36\\v64\\v33\\v65\\v66\\v32\\v27\\v102'")(), v91 = v5("return '\\v21\\v29\\v22\\v28\\v7\\v317\\v7\\v28\\v13\\v21\\v24\\v12\\v29\\v22'")(), v144 = 3 })
-return
-end
-local v373 = v3:v104(v5("return '\\v227\\v22\\v29\\v22\\v8\\v18\\v28\\v7\\v100\\v22\\v28\\v105\\v13\\v17\\v22'")())
-local v298, v299 = v117(function() v373:v370(v3.v371, v389, v107) end)
-if v298 then v1:v133({ v134 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v293\\v45\\v37\\v135\\v51\\v328'")(), v137 = v5("return '\\v49\\v295\\v50\\v33\\v56\\v66\\v33\\v36\\v37\\v33\\v268\\v43\\v10\\v32'")() .. v389, v91 = v5("return '\\v17\\v6\\v22\\v17\\v97'")(), v144 = 3 })
-else v1:v133({ v134 = v5("return '\\v33\\v36\\v37\\v33\\v268\\v43\\v33\\v40\\v41\\v38\\v42\\v43'")(), v137 = v122(v299), v91 = v5("return '\\v110'")(), v144 = 5 }) end
-end
-})
-v115.v281(0.5, function()
-v181()
-end)
-end,
-v316 = v5("return '\\v92\\v28\\v13\\v19\\v21\\v28\\v95'")(),
-}
-}
+
+--// ============================================
+--   5. 通用脚本加载
+--// ============================================
+local function loadExternalScript(name, url)
+    WindUI:Notify({ Title = "加载中", Content = "正在加载 " .. name .. "...", Icon = "loader", Duration = 2 })
+    task.spawn(function()
+        local ok, srcOrErr = pcall(function() return game:HttpGet(url, true) end)
+        if not ok then
+            WindUI:Notify({ Title = "下载失败", Content = name .. " 错误: " .. tostring(srcOrErr), Icon = "x", Duration = 5 })
+            return
+        end
+        local success, err = pcall(function() loadstring(srcOrErr)() end)
+        if success then
+            WindUI:Notify({ Title = "加载成功", Content = name .. " 已加载", Icon = "check", Duration = 3 })
+        else
+            WindUI:Notify({ Title = "执行失败", Content = name .. " 错误: " .. tostring(err), Icon = "x", Duration = 5 })
+        end
+    end)
+end
+
+--// ============================================
+--   6. 弹窗与主窗口
+--// ============================================
+WindUI:Popup({
+    Title = "冰缝合脚本",
+    Icon = "info",
+    Content = "点击执行进入脚本主界面\n作者：榆 | 参与者：心意冰存(嵩)",
+    Buttons = {
+        {
+            Title = "退出",
+            Callback = function() end,
+            Variant = "Tertiary",
+        },
+        {
+            Title = "执行",
+            Icon = "arrow-right",
+            Callback = function()
+                local Window = WindUI:CreateWindow({
+                    Title = "冰缝合脚本",
+                    Icon = "door-open",
+                    Author = "榆",
+                    HideSearchBar = false,
+                })
+
+                Window:ToggleTransparency(true)
+                EnhancedTransparency = true
+
+                --// ===== 公告页 =====
+                local NoticeTab = Window:Tab({ Title = "公告", Icon = "megaphone", Locked = false })
+                NoticeTab:Paragraph({ Title = "欢迎使用", Desc = "本脚本由 榆 开发，仅供学习交流使用。" })
+                NoticeTab:Paragraph({
+                    Title = "玩家信息",
+                    Desc = "用户名: " .. player.Name .. "\n显示名称: " .. player.DisplayName .. "\n账号年龄: " .. player.AccountAge .. " 天\n用户ID: " .. player.UserId,
+                    Image = "user",
+                    ImageSize = 20
+                })
+
+                --// ===== 主要功能页 =====
+                local MainTab = Window:Tab({ Title = "主要", Icon = "house", Locked = false })
+                MainTab:Paragraph({ Title = "作者信息", Desc = "作者：榆\n参与者：心意冰存(嵩)" })
+
+                MainTab:Dropdown({
+                    Title = "切换背景图片",
+                    Values = BG_NAMES,
+                    Value = BG_NAMES[1],
+                    Callback = function(selected)
+                        for i, name in ipairs(BG_NAMES) do
+                            if name == selected then
+                                applyBackgroundImage(BG_LIST[i])
+                                break
+                            end
+                        end
+                    end
+                })
+
+                MainTab:Slider({
+                    Title = "UI 黑色透明度",
+                    Desc = "0 = 纯黑   1 = 完全透明（开启透明窗口时会被拉满）",
+                    Value = { Min = 0, Max = 1, Default = UIDarkTransparency },
+                    Callback = function(value)
+                        UIDarkTransparency = value
+                        if #DarkFrames == 0 then collectDarkFrames() end
+                        applyUIDarkTransparency()
+                    end
+                })
+
+                MainTab:Input({
+                    Title = "自定义背景图片 ID",
+                    Desc = "输入图片 ID 后按回车应用",
+                    Icon = "image",
+                    Callback = function(text)
+                        if text and text ~= "" then
+                            applyBackgroundImage(text)
+                        end
+                    end
+                })
+
+                MainTab:Button({
+                    Title = "应用 / 刷新背景",
+                    Desc = "重新加载当前背景图片",
+                    Icon = "refresh-cw",
+                    Callback = function() applyBackgroundImage(CurrentBG) end
+                })
+
+                --// ===== 进出提示页 =====
+                local NotifyTab = Window:Tab({ Title = "进出提示", Icon = "bell", Locked = false })
+                NotifyTab:Toggle({
+                    Title = "启用玩家进出提示",
+                    Value = true,
+                    Callback = function(value) NotifyEnabled = value; NotifyGui.Enabled = value end
+                })
+                NotifyTab:Slider({
+                    Title = "提示停留时间（秒）",
+                    Value = { Min = 1, Max = 8, Default = 3 },
+                    Callback = function(value) NoticeDuration = value end
+                })
+                NotifyTab:Slider({
+                    Title = "最大同时显示条数",
+                    Value = { Min = 1, Max = 10, Default = 5 },
+                    Callback = function(value) MaxNotices = math.floor(value) end
+                })
+                NotifyTab:Section({ Title = "测试" })
+                NotifyTab:Button({ Title = "测试 - 玩家加入", Callback = function() createNotice("TestPlayer_Join", true) end })
+                NotifyTab:Button({ Title = "测试 - 玩家离开", Callback = function() createNotice("TestPlayer_Leave", false) end })
+
+                --// ===== 脚本库页 =====
+                local ScriptTab = Window:Tab({ Title = "脚本库", Icon = "code", Locked = false })
+                ScriptTab:Section({ Title = "Aero 脚本库" })
+                ScriptTab:Button({ Title = "▶ 加载 超高速跑者", Callback = function() loadExternalScript("超高速跑者", "https://raw.githubusercontent.com/wwd6ng2j66-art/-/main/%E8%B6%85%E9%AB%98%E9%80%9F%E8%B7%91%E8%80%85.lua") end })
+                ScriptTab:Button({ Title = "▶ 加载 99夜脚本", Callback = function() loadExternalScript("99夜", "https://raw.githubusercontent.com/wwd6ng2j66-art/-/38aa514a561dd344e3b75c60e21197e484fc31aa/99%20%E5%A4%9C.lua") end })
+
+                ScriptTab:Section({ Title = "其他脚本库" })
+                ScriptTab:Button({ Title = "▶ 加载 偷一个蛋 (TX Script)", Callback = function() loadExternalScript("偷一个蛋", "https://raw.githubusercontent.com/JsYb666/Item/refs/heads/main/Steal-Eggs") end })
+
+                --// ===== 设置页 =====
+                local SettingsTab = Window:Tab({ Title = "设置", Icon = "settings", Locked = false })
+
+                SettingsTab:Toggle({
+                    Title = "切换透明窗口",
+                    Desc = "开启后 UI 会变得非常透明，可清晰看到背景图",
+                    Callback = function(e)
+                        Window:ToggleTransparency(e)
+                        EnhancedTransparency = e
+                        applyUIDarkTransparency()
+                    end,
+                    Value = WindUI:GetTransparency()
+                })
+
+                SettingsTab:Dropdown({
+                    Title = "切换主题",
+                    Values = { "Dark", "Amber", "Plant", "Cotton Candy", "Monokai Pro", "Crimson", "Violet", "Midnight", "Rose", "Mellowsi", "Sky", "Indigo", "Red", "Emerald" },
+                    Value = "Dark",
+                    Callback = function(selected) WindUI:SetTheme(selected); WindUI:UpdateTheme() end
+                })
+
+                SettingsTab:Space()
+                SettingsTab:Button({
+                    Title = "重新加入当前服务器",
+                    Desc = "自动读取当前服务器 ID 并重新加入",
+                    Icon = "refresh-cw",
+                    Callback = function()
+                        local jobId = game.JobId
+                        if jobId and jobId ~= "" then
+                            local success, err = pcall(function() game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, jobId, player) end)
+                            if success then WindUI:Notify({ Title = "正在重连", Content = "正在返回当前服务器...", Icon = "check", Duration = 3 })
+                            else WindUI:Notify({ Title = "重连失败", Content = "无法返回当前服务器。", Icon = "x", Duration = 5 }) end
+                        else
+                            WindUI:Notify({ Title = "重连失败", Content = "无法获取当前服务器 ID", Icon = "x", Duration = 3 })
+                        end
+                    end
+                })
+
+                SettingsTab:Space()
+                SettingsTab:Button({
+                    Title = "服务器跳跃",
+                    Desc = "寻找一个新的随机服务器",
+                    Icon = "globe",
+                    Callback = function()
+                        local TS = game:GetService("TeleportService")
+                        local HS = game:GetService("HttpService")
+                        local success, res = pcall(function() return HS:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")) end)
+                        if success and res and res.data and #res.data > 0 then
+                            local chosen = res.data[math.random(1, #res.data)]
+                            TS:TeleportToPlaceInstance(game.PlaceId, chosen.id, player)
+                        else
+                            WindUI:Notify({ Title = "跳跃失败", Content = "没有找到可用的服务器", Icon = "x" })
+                        end
+                    end
+                })
+
+                SettingsTab:Space()
+                SettingsTab:Button({
+                    Title = "加入人少的服务器",
+                    Desc = "自动寻找并加入当前在线人数最少的服务器",
+                    Icon = "users",
+                    Callback = function()
+                        local TS = game:GetService("TeleportService")
+                        local HS = game:GetService("HttpService")
+                        local success, res = pcall(function() return HS:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")) end)
+                        if success and res and res.data and #res.data > 0 then
+                            table.sort(res.data, function(a, b) return a.playing < b.playing end)
+                            local chosenServer = res.data[1]
+                            TS:TeleportToPlaceInstance(game.PlaceId, chosenServer.id, player)
+                            WindUI:Notify({ Title = "正在跳跃", Content = "当前人数：" .. chosenServer.playing, Icon = "check", Duration = 3 })
+                        else
+                            WindUI:Notify({ Title = "跳跃失败", Content = "没有找到可用的服务器", Icon = "x" })
+                        end
+                    end
+                })
+
+                SettingsTab:Space()
+                SettingsTab:Button({
+                    Title = "复制当前服务器 ID",
+                    Desc = "将当前服务器的 ID 复制到剪贴板",
+                    Icon = "copy",
+                    Callback = function()
+                        if game.JobId and game.JobId ~= "" then
+                            setclipboard(game.JobId)
+                            WindUI:Notify({ Title = "复制成功", Content = "服务器 ID 已复制", Icon = "check", Duration = 3 })
+                        else
+                            WindUI:Notify({ Title = "复制失败", Content = "无法获取当前服务器 ID", Icon = "x", Duration = 3 })
+                        end
+                    end
+                })
+
+                SettingsTab:Space()
+                local TargetJobId = ""
+                SettingsTab:Input({
+                    Title = "输入服务器 ID",
+                    Desc = "粘贴你想加入的服务器 JobId",
+                    Icon = "hash",
+                    Callback = function(value) TargetJobId = value end
+                })
+
+                SettingsTab:Space()
+                SettingsTab:Button({
+                    Title = "加入特定服务器",
+                    Desc = "使用上方输入框中的 ID 加入对应服务器",
+                    Icon = "log-in",
+                    Callback = function()
+                        if not TargetJobId or TargetJobId == "" then
+                            WindUI:Notify({ Title = "加入失败", Content = "请先粘贴服务器 ID", Icon = "alert-triangle", Duration = 3 })
+                            return
+                        end
+                        local TS = game:GetService("TeleportService")
+                        local success, err = pcall(function() TS:TeleportToPlaceInstance(game.PlaceId, TargetJobId, player) end)
+                        if success then WindUI:Notify({ Title = "正在传送", Content = "正在加入: " .. TargetJobId, Icon = "check", Duration = 3 })
+                        else WindUI:Notify({ Title = "加入失败", Content = tostring(err), Icon = "x", Duration = 5 }) end
+                    end
+                })
+
+                task.delay(0.5, function()
+                    applyWindUITheme()
+                end)
+            end,
+            Variant = "Primary",
+        }
+    }
 })
